@@ -1,0 +1,130 @@
+
+using com.apama.exceptions.Exception;
+
+event Asserts {
+	static action assertBase(boolean pass, string testName, string message) {
+		if (not pass) {
+			log "FAIL - " + testName + " Assertion error: " + message at ERROR;
+		}
+	}
+
+	static action assertEquals(string testName, any testVal, any refVal) {
+
+		string message := testVal.valueToString() + " != " + refVal.valueToString();
+
+		switch(testVal as castedVal) {
+			case integer: {
+				assertBase(castedVal = <integer>refVal, testName, message);
+			}
+			case string: {
+				assertBase(castedVal = <string> refVal, testName, message);
+			}
+			case boolean: {
+				assertBase(castedVal = <boolean> refVal, testName, message);
+			}
+			case float: {
+				float tol := 0.0001;
+				assertBase((castedVal-<float>refVal).abs() < tol, testName, message);
+			}
+			default: {
+				assertBase(testVal.getFields() = refVal.getFields(), testName, message);
+			}
+		}
+	}
+
+	static action assertNotEquals(string testName, any testVal, any refVal) {
+		string message := testVal.valueToString() + " = " + refVal.valueToString() + " when expecting values to not equal";
+
+		switch(testVal as castedVal) {
+			case integer: {
+				assertBase(castedVal != <integer>refVal, testName, message);
+			}
+			case string: {
+				assertBase(castedVal != <string> refVal, testName, message);
+			}
+			case boolean: {
+				assertBase(castedVal != <boolean> refVal, testName, message);
+			}
+			case float: {
+				float tol := 0.0001;
+				assertBase((castedVal-<float>refVal).abs() > tol, testName, message);
+			}
+			default: {
+				//TODO
+			}
+		}
+	}
+
+	static action assertTrue(string testName, boolean testVal) {
+		string message := "expression is false when expecting true";
+
+		assertBase(testVal, testName, message);
+	}
+
+	static action assertFalse(string testName, boolean testVal) {
+		string message := "expression is true when expecting false";
+
+		assertBase(testVal, testName, message);
+	}
+
+	static action assertGreaterThan(string testName, any testVal, any refVal) {
+		string message := testVal.valueToString() + " <= " + refVal.valueToString();
+
+		switch(testVal as castedVal) {
+			case integer: {
+				assertBase(castedVal > <integer>refVal, testName, message);
+			}
+			case string: {
+				assertBase(castedVal > <string> refVal, testName, message);
+			}
+			case float: {
+				float tol := 0.0001;
+				assertBase((castedVal-<float>refVal) > tol, testName, message);
+			}
+			default: {
+				//TODO
+			}
+		}
+	}
+
+	static action assertLesserThan(string testName, any testVal, any refVal) {
+		string message := testVal.valueToString() + " >= " + refVal.valueToString();
+
+		switch(testVal as castedVal) {
+			case integer: {
+				assertBase(castedVal < <integer>refVal, testName, message);
+			}
+			case string: {
+				assertBase(castedVal < <string> refVal, testName, message);
+			}
+			case float: {
+				float tol := 0.0001;
+				assertBase((castedVal-<float>refVal) < -tol, testName, message);
+			}
+			default: {
+				//TODO
+			}
+		}
+	}
+
+	static action assertThrows(string testName, any testFn, any args) {
+		try {
+			any temp := testFn.getGenericAction()(args.getEntries());
+
+			string message := "function did not throw error when expecting to";
+			assertBase(false, testName, message);
+		} catch (Exception e) {
+			return;
+		}
+	}
+
+	static action assertNoThrow(string testName, any testFn, any args) {
+		try {
+			any temp := testFn.getGenericAction()(args.getEntries());
+		} catch (Exception e) {
+			string message := "function threw error when not expected to: " + e.toString();
+			assertBase(false, testName, message);
+		}
+	}
+
+}

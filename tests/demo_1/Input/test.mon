@@ -1,0 +1,30 @@
+event device {
+	string id;
+	string type;
+
+	static action create(string id, string type) returns device {
+		device temp := new device;
+
+		temp.id := id;
+		temp.type := type;
+		return temp;
+	}
+}
+
+action addTo1(integer i) returns integer {
+    if(i != 1) {
+        throw Exception("Argument is not 1", "IllegalArgumentException");
+    } else {
+        return i + 1;
+    }
+}
+
+monitor AssertTest {
+	/** Initialize the application */
+	action onload() {
+		device device1 := device.create("abc", "sensor");
+		device device2 := device.create("abc", "sensor");
+
+		Asserts.assertEquals("objectEqualsTest", device1, device2);
+	}
+}
