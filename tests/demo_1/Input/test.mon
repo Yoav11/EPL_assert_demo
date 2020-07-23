@@ -1,3 +1,6 @@
+using com.apama.exceptions.Exception;
+using com.apamax.test.Asserts;
+
 event device {
 	string id;
 	string type;
@@ -11,20 +14,43 @@ event device {
 	}
 }
 
-action addTo1(integer i) returns integer {
-    if(i != 1) {
-        throw Exception("Argument is not 1", "IllegalArgumentException");
-    } else {
-        return i + 1;
-    }
-}
 
 monitor AssertTest {
 	/** Initialize the application */
 	action onload() {
 		device device1 := device.create("abc", "sensor");
-		device device2 := device.create("abc", "sensor");
+		device device2 := device.create("abcd", "sensor");
 
+		Asserts.assertEquals("stringsEqualTest", "hello world", "hello world");
 		Asserts.assertEquals("objectEqualsTest", device1, device2);
+
+		Asserts.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
+		Asserts.assertNotEquals("intNotEqualsTest", 1, 1);
+
+		Asserts.assertTrue("twoPlusTwoIsFour", (2+2)=4);
+		Asserts.assertTrue("twoPlusTwoIsFive", (2+2)=5);
+
+		Asserts.assertFalse("twoPlusTwoIsNotFive", (2+2)=5);
+		Asserts.assertFalse("twoPlusTwoIsNotFour", (2+2)=4);
+
+		Asserts.assertGreaterThan("greaterThanStringTest", "b", "a");
+		Asserts.assertGreaterThan("greaterThanIntTest", 1, 4);
+
+		Asserts.assertLesserThan("lesserThanStringTest", "Hello", "Helloo");
+		Asserts.assertLesserThan("lesserThanFloatTest", -0.19, -0.20);
+
+		Asserts.assertThrows("throwTest1", addTo1, [2]);
+		Asserts.assertThrows("throwTest2", addTo1, [1]);
+
+		Asserts.assertNoThrow("noThrowTest1", addTo1, [1]);
+		Asserts.assertNoThrow("noThrowTest2", addTo1, [2]);
+	}
+
+	action addTo1(integer i) returns integer {
+		if(i != 1) {
+			throw Exception("Argument is not 1", "IllegalArgumentException");
+		} else {
+			return i + 1;
+		}
 	}
 }

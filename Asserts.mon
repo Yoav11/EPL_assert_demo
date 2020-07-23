@@ -1,3 +1,4 @@
+package com.apamax.test;
 
 using com.apama.exceptions.Exception;
 

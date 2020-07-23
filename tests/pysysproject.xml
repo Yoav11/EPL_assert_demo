@@ -7,6 +7,10 @@
 	<property environment="env"/>
 	<property osfamily="osfamily"/>
 
+	<property name="APAMA_HOME" value="${env.APAMA_HOME}"/>
+	<property name="APAMA_WORK" value="${env.APAMA_WORK}"/>
+	<property name="APAMA_COMMON_JRE" value="${env.APAMA_JRE}"/>
+
 	<!-- User-defined properties -->
 
 	<!-- Standard default settings. See sample project file and API docs for more details. -->

@@ -18,3 +18,4 @@ class PySysTest(BaseTest):
 
 	def validate(self):
 		self.assertGrep('correlator.log', expr=' ERROR ', contains=False)
+		
