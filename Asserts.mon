@@ -2,7 +2,15 @@ package com.apamax.test;
 
 using com.apama.exceptions.Exception;
 
+/**
+ * An assertion class for testing epl applications
+ */
 event Asserts {
+    /** Log an assertion failure when test does not pass
+	 * @param pass A boolean - true if a test passes, false if it fails
+	 * @param testName name of test
+     * @param message custom message with information about test failure
+	 */
 	static action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
 			log "FAIL - " + testName + " Assertion error: " + message at ERROR;
