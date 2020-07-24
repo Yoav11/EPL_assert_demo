@@ -6,10 +6,10 @@ using com.apama.exceptions.Exception;
  * An assertion class for testing epl applications
  */
 event Asserts {
-    /** Log an assertion failure when test does not pass
-	 * @param pass A boolean - true if a test passes, false if it fails
-	 * @param testName name of test
-     * @param message custom message with information about test failure
+    /** Logs an assertion failure when test does not pass.
+	 * @param pass set to true if a test passes, false if it fails.
+	 * @param testName name of test being asserted.
+     * @param message custom message with information about test failure.
 	 */
 	static action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
@@ -17,6 +17,18 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that two values are equal. Uses different handling depending on type:
+     *
+     * Integer, string, boolean - uses the '=' operator.
+     * 
+     * float - checks equality within a tolerance of 0.0001.
+     *
+     * others - uses the any .getFields() method as a comparator.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param refVal value to compare testVal to.
+	 */
 	static action assertEquals(string testName, any testVal, any refVal) {
 
 		string message := testVal.valueToString() + " != " + refVal.valueToString();
@@ -41,6 +53,18 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that two values are not equal. Uses different handling depending on type:
+     *
+     * Integer, string, boolean - uses the '=' operator.
+     * 
+     * float - checks inequality within a tolerance of 0.0001.
+     *
+     * others - uses the any .getFields() method as a comparator.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param refVal value to compare testVal to.
+	 */
 	static action assertNotEquals(string testName, any testVal, any refVal) {
 		string message := testVal.valueToString() + " = " + refVal.valueToString() + " when expecting values to not equal";
 
@@ -59,23 +83,39 @@ event Asserts {
 				assertBase((castedVal-<float>refVal).abs() > tol, testName, message);
 			}
 			default: {
-				//TODO
+				assertBase(testVal.getFields() != refVal.getFields(), testName, message);
 			}
 		}
 	}
 
+    /** 
+     * Asserts that a value is true.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+	 */
 	static action assertTrue(string testName, boolean testVal) {
 		string message := "expression is false when expecting true";
 
 		assertBase(testVal, testName, message);
 	}
 
+    /** 
+     * Asserts that a value is false.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+	 */
 	static action assertFalse(string testName, boolean testVal) {
 		string message := "expression is true when expecting false";
 
 		assertBase(testVal, testName, message);
 	}
 
+    /** 
+     * Asserts that testVal is greater than refVal.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param refVal value to compare testVal to.
+	 */
 	static action assertGreaterThan(string testName, any testVal, any refVal) {
 		string message := testVal.valueToString() + " <= " + refVal.valueToString();
 
@@ -96,6 +136,12 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that testVal is lesser than refVal.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param refVal value to compare testVal to.
+	 */
 	static action assertLesserThan(string testName, any testVal, any refVal) {
 		string message := testVal.valueToString() + " >= " + refVal.valueToString();
 
@@ -116,6 +162,12 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that an action throws an exception
+	 * @param testName name of test being asserted.
+	 * @param testFn action being tested.
+     * @param args arguments to pass to testFn.
+	 */
 	static action assertThrows(string testName, any testFn, any args) {
 		try {
 			any temp := testFn.getGenericAction()(args.getEntries());
@@ -127,6 +179,12 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that an action does not throw an exception
+	 * @param testName name of test being asserted.
+	 * @param testFn action being tested.
+     * @param args arguments to pass to testFn.
+	 */
 	static action assertNoThrow(string testName, any testFn, any args) {
 		try {
 			any temp := testFn.getGenericAction()(args.getEntries());
@@ -136,6 +194,13 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that an action throws a specific exception type
+	 * @param testName name of test being asserted.
+	 * @param testFn action being tested.
+     * @param args arguments to pass to testFn.
+     * @param exceptionType type of exception expected to be thrown
+	 */
 	static action assertThrowsException(string testName, any testFn, any args, string exceptionType) {
 		try {
 			any temp := testFn.getGenericAction()(args.getEntries());
