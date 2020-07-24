@@ -217,6 +217,12 @@ event Asserts {
 		}
 	}
 
+    /** 
+     * Asserts that an event contains a specific field
+	 * @param testName name of test being asserted.
+	 * @param testVal event being tested.
+     * @param fieldName name of the field being inspected.
+	 */
 	static action assertContains(string testName, any testVal, string fieldName) {
 		try {
 			string value := testVal.getFieldString(fieldName);
