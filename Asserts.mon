@@ -128,4 +128,20 @@ event Asserts {
 		}
 	}
 
+	static action assertThrowsException(string testName, any testFn, any args, string exceptionType) {
+		try {
+			any temp := testFn.getGenericAction()(args.getEntries());
+
+			string message := "function did not throw error when expecting to";
+			assertBase(false, testName, message);
+		} catch (Exception e) {
+			if (e.getType() = exceptionType) {
+				return;
+			} else {
+				string message := "function threw " + e.getType() + " when expecting a " + exceptionType + " exception";
+				assertBase(false, testName, message);
+			}
+		}
+	}
+
 }

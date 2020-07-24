@@ -44,6 +44,9 @@ monitor AssertTest {
 
 		Asserts.assertNoThrow("noThrowTest1", addTo1, [1]);
 		Asserts.assertNoThrow("noThrowTest2", addTo1, [2]);
+
+		Asserts.assertThrowsException("specificThrowTest1", addTo1, [2], "IllegalArgumentException");
+		Asserts.assertThrowsException("specificThrowTest2", addTo1, [2], "ArithmeticException");
 	}
 
 	action addTo1(integer i) returns integer {
