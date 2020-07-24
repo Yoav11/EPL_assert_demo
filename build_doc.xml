@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="" default="apamadoc" basedir=".">
+  <property environment="env"/>
+  <import file="${env.APAMA_HOME}/etc/apama-macros.xml"/>
+  <target name="apamadoc">
+    <generate-apamadoc outputDir="./docs" title="ApamaDoc Title">
+      <fileset dir="./">
+         <include name="**/Asserts.mon"/>
+      </fileset>
+    </generate-apamadoc>
+  </target>
+</project>

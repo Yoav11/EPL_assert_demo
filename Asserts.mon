@@ -217,4 +217,13 @@ event Asserts {
 		}
 	}
 
+	static action assertContains(string testName, any testVal, string fieldName) {
+		try {
+			string value := testVal.getFieldString(fieldName);
+		} catch (Exception e) {
+			string message := testVal.toString() + " does not contain field " + fieldName;
+			assertBase(false, testName, message);
+		}
+	}
+
 }

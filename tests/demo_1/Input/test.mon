@@ -47,6 +47,9 @@ monitor AssertTest {
 
 		Asserts.assertThrowsException("specificThrowTest1", addTo1, [2], "IllegalArgumentException");
 		Asserts.assertThrowsException("specificThrowTest2", addTo1, [2], "ArithmeticException");
+
+		Asserts.assertContains("containsTest1", device1, "id");
+		Asserts.assertContains("containsTest2", device1, "name");
 	}
 
 	action addTo1(integer i) returns integer {
