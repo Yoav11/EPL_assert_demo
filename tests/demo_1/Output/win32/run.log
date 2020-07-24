@@ -1,17 +1,17 @@
-2020-07-24 09:47:15,193 INFO  ==============================================================
-2020-07-24 09:47:15,193 INFO  Id   : demo_1
-2020-07-24 09:47:15,195 INFO  ==============================================================
-2020-07-24 09:47:15,216 INFO  Started correlator<localhost:61507> with process id 22900
-2020-07-24 09:47:15,785 INFO     Component correlator<pid 22900 on localhost:61507> is now running
-2020-07-24 09:47:15,895 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
-2020-07-24 09:47:16,005 INFO  Executed engine_inject <correlator> [test.mon], exit status 0
-2020-07-24 09:47:16,064 INFO  Executed manage <correlator> [-r flushAllQueues], exit status 0
-2020-07-24 09:47:16,123 INFO  Executed shutdown <correlator>, exit status 0
-2020-07-24 09:47:16,267 WARN  Grep on correlator.log does not contain " ERROR " failed with: "2020-07-24 09:47:15.962 ERROR [28552] - AssertTest [1] FAIL - objectEqualsTest Assertion error: device("abc","sensor") != device("abcd","sensor")" ... failed [run.py:20]
-2020-07-24 09:47:16,271 INFO  
-2020-07-24 09:47:16,271 INFO  cleanup:
-2020-07-24 09:47:16,272 INFO  
-2020-07-24 09:47:16,272 INFO  Test duration: 1.08 secs
-2020-07-24 09:47:16,273 INFO  Test final outcome:  FAILED
-2020-07-24 09:47:16,274 INFO  Test outcome reason: Grep on correlator.log does not contain " ERROR " failed with: "2020-07-24 09:47:15.962 ERROR [28552] - AssertTest [1] FAIL - objectEqualsTest Assertion error: device("abc","sensor") != device("abcd","sensor")"
-2020-07-24 09:47:16,275 INFO  
+2020-07-24 14:57:30,275 INFO  ==============================================================
+2020-07-24 14:57:30,276 INFO  Id   : demo_1
+2020-07-24 14:57:30,277 INFO  ==============================================================
+2020-07-24 14:57:30,318 INFO  Started correlator<localhost:10374> with process id 25012
+2020-07-24 14:57:31,146 INFO     Component correlator<pid 25012 on localhost:10374> is now running
+2020-07-24 14:57:31,338 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
+2020-07-24 14:57:31,464 INFO  Executed engine_inject <correlator> [test.mon], exit status 0
+2020-07-24 14:57:31,588 INFO  Executed manage <correlator> [-r flushAllQueues], exit status 0
+2020-07-24 14:57:31,713 INFO  Executed shutdown <correlator>, exit status 0
+2020-07-24 14:57:31,813 WARN  Grep on correlator.log does not contain " ERROR " failed with: "2020-07-24 14:57:31.461 ERROR [10412] - AssertTest [1] FAIL - objectEqualsTest Assertion error: device("abc","sensor") != device("abcd","sensor")" ... failed [run.py:20]
+2020-07-24 14:57:31,820 INFO  
+2020-07-24 14:57:31,820 INFO  cleanup:
+2020-07-24 14:57:31,821 INFO  
+2020-07-24 14:57:31,822 INFO  Test duration: 1.55 secs
+2020-07-24 14:57:31,827 INFO  Test final outcome:  FAILED
+2020-07-24 14:57:31,835 INFO  Test outcome reason: Grep on correlator.log does not contain " ERROR " failed with: "2020-07-24 14:57:31.461 ERROR [10412] - AssertTest [1] FAIL - objectEqualsTest Assertion error: device("abc","sensor") != device("abcd","sensor")"
+2020-07-24 14:57:31,841 INFO  
