@@ -5,15 +5,47 @@ using com.apama.exceptions.Exception;
 /**
  * An assertion class for testing epl applications
  */
-event Asserts {
+event Assert {
+	boolean isEnabled;
+	string logLevel;
+
+	/** Creates an instance of the Assert event to run assertions from.
+	 * @param options dictionary<string, any>, options include:
+	 *	<boolean>isEnabled - set to true to enable logging
+	 *	<string>logLevel - either "ERROR" or "DEBUG" sets logging level.
+	 */
+	static action create(dictionary<string, any> options) returns Assert {
+		Assert temp := new Assert;
+
+		if(options.hasKey("isEnabled")) {
+			temp.isEnabled := <boolean>options["isEnabled"];
+		} else {
+			temp.isEnabled := true;
+		}
+
+		if(options.hasKey("logLevel")) {
+			temp.logLevel := <string>options["logLevel"];
+		} else {
+			temp.logLevel := "ERROR";
+		}
+
+		return temp;
+	}
+
     /** Logs an assertion failure when test does not pass.
 	 * @param pass set to true if a test passes, false if it fails.
 	 * @param testName name of test being asserted.
      * @param message custom message with information about test failure.
 	 */
-	static action assertBase(boolean pass, string testName, string message) {
+	action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
-			log "FAIL - " + testName + " Assertion error: " + message at ERROR;
+			if(logLevel = "ERROR") {
+				log "FAIL - " + testName + " Assertion error: " + message at ERROR;
+			} else if (logLevel = "DEBUG") {
+				log "FAIL - " + testName + " Assertion error: " + message at DEBUG;
+			} else {
+				log "FAIL - please set a valid log level for Assert instance, use ERROR or DEBUG";
+			}
 		}
 	}
 
@@ -29,26 +61,27 @@ event Asserts {
 	 * @param testVal value to test.
      * @param refVal value to compare testVal to.
 	 */
-	static action assertEquals(string testName, any testVal, any refVal) {
+	action assertEquals(string testName, any testVal, any refVal) {
+		if(isEnabled) {
+			string message := testVal.valueToString() + " != " + refVal.valueToString();
 
-		string message := testVal.valueToString() + " != " + refVal.valueToString();
-
-		switch(testVal as castedVal) {
-			case integer: {
-				assertBase(castedVal = <integer>refVal, testName, message);
-			}
-			case string: {
-				assertBase(castedVal = <string> refVal, testName, message);
-			}
-			case boolean: {
-				assertBase(castedVal = <boolean> refVal, testName, message);
-			}
-			case float: {
-				float tol := 0.0001;
-				assertBase((castedVal-<float>refVal).abs() < tol, testName, message);
-			}
-			default: {
-				assertBase(testVal.getFields() = refVal.getFields(), testName, message);
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal = <integer>refVal, testName, message);
+				}
+				case string: {
+					assertBase(castedVal = <string> refVal, testName, message);
+				}
+				case boolean: {
+					assertBase(castedVal = <boolean> refVal, testName, message);
+				}
+				case float: {
+					float tol := 0.0001;
+					assertBase((castedVal-<float>refVal).abs() < tol, testName, message);
+				}
+				default: {
+					assertBase(testVal.getFields() = refVal.getFields(), testName, message);
+				}
 			}
 		}
 	}
@@ -65,25 +98,56 @@ event Asserts {
 	 * @param testVal value to test.
      * @param refVal value to compare testVal to.
 	 */
-	static action assertNotEquals(string testName, any testVal, any refVal) {
-		string message := testVal.valueToString() + " = " + refVal.valueToString() + " when expecting values to not equal";
+	action assertNotEquals(string testName, any testVal, any refVal) {
+		if(isEnabled) {
+			string message := testVal.valueToString() + " = " + refVal.valueToString() + " when expecting values to not equal";
 
-		switch(testVal as castedVal) {
-			case integer: {
-				assertBase(castedVal != <integer>refVal, testName, message);
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal != <integer>refVal, testName, message);
+				}
+				case string: {
+					assertBase(castedVal != <string> refVal, testName, message);
+				}
+				case boolean: {
+					assertBase(castedVal != <boolean> refVal, testName, message);
+				}
+				case float: {
+					float tol := 0.0001;
+					assertBase((castedVal-<float>refVal).abs() > tol, testName, message);
+				}
+				default: {
+					assertBase(testVal.getFields() != refVal.getFields(), testName, message);
+				}
 			}
-			case string: {
-				assertBase(castedVal != <string> refVal, testName, message);
+		}
+	}
+
+	/** 
+     * Asserts that a value lies within a range. Supports integers and floats as test val.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param lowerBound lower bound for the range. must be of the same type as testVal.
+	 * @param higherBound higher bound for the range. must be of the same type as testVal.
+	 */
+	action assertInRange(string testName, any testVal, any lowerBound, any higherBound) {
+		if(isEnabled) {
+			string message := testVal.valueToString() + " is not in the range " + lowerBound.valueToString() + "-" + higherBound.valueToString();
+
+			if(lowerBound > higherBound) {
+				assertBase(false, testName, " lowerBound must be smaller than higherBound");
 			}
-			case boolean: {
-				assertBase(castedVal != <boolean> refVal, testName, message);
-			}
-			case float: {
-				float tol := 0.0001;
-				assertBase((castedVal-<float>refVal).abs() > tol, testName, message);
-			}
-			default: {
-				assertBase(testVal.getFields() != refVal.getFields(), testName, message);
+
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal >= <integer>lowerBound and castedVal <= <integer>higherBound, testName, message);
+				}
+				case float: {
+					assertBase(castedVal >= <float>lowerBound and castedVal <= <float>higherBound, testName, message);
+				}
+				default: {
+					assertBase(false, testName, "invalid input type");
+				}
 			}
 		}
 	}
@@ -93,10 +157,12 @@ event Asserts {
 	 * @param testName name of test being asserted.
 	 * @param testVal value to test.
 	 */
-	static action assertTrue(string testName, boolean testVal) {
-		string message := "expression is false when expecting true";
+	action assertTrue(string testName, boolean testVal) {
+		if(isEnabled) {
+			string message := "expression is false when expecting true";
 
-		assertBase(testVal, testName, message);
+			assertBase(testVal, testName, message);
+		}
 	}
 
     /** 
@@ -104,10 +170,12 @@ event Asserts {
 	 * @param testName name of test being asserted.
 	 * @param testVal value to test.
 	 */
-	static action assertFalse(string testName, boolean testVal) {
-		string message := "expression is true when expecting false";
+	action assertFalse(string testName, boolean testVal) {
+		if(isEnabled) {
+			string message := "expression is true when expecting false";
 
-		assertBase(testVal, testName, message);
+			assertBase(testVal, testName, message);
+		}
 	}
 
     /** 
@@ -116,22 +184,24 @@ event Asserts {
 	 * @param testVal value to test.
      * @param refVal value to compare testVal to.
 	 */
-	static action assertGreaterThan(string testName, any testVal, any refVal) {
-		string message := testVal.valueToString() + " <= " + refVal.valueToString();
+	action assertGreaterThan(string testName, any testVal, any refVal) {
+		if(isEnabled) {
+			string message := testVal.valueToString() + " <= " + refVal.valueToString();
 
-		switch(testVal as castedVal) {
-			case integer: {
-				assertBase(castedVal > <integer>refVal, testName, message);
-			}
-			case string: {
-				assertBase(castedVal > <string> refVal, testName, message);
-			}
-			case float: {
-				float tol := 0.0001;
-				assertBase((castedVal-<float>refVal) > tol, testName, message);
-			}
-			default: {
-				//TODO
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal > <integer>refVal, testName, message);
+				}
+				case string: {
+					assertBase(castedVal > <string> refVal, testName, message);
+				}
+				case float: {
+					float tol := 0.0001;
+					assertBase((castedVal-<float>refVal) > tol, testName, message);
+				}
+				default: {
+					assertBase(false, testName, "invalid input type")
+				}
 			}
 		}
 	}
@@ -142,22 +212,24 @@ event Asserts {
 	 * @param testVal value to test.
      * @param refVal value to compare testVal to.
 	 */
-	static action assertLesserThan(string testName, any testVal, any refVal) {
-		string message := testVal.valueToString() + " >= " + refVal.valueToString();
+	action assertLesserThan(string testName, any testVal, any refVal) {
+		if(isEnabled) {
+			string message := testVal.valueToString() + " >= " + refVal.valueToString();
 
-		switch(testVal as castedVal) {
-			case integer: {
-				assertBase(castedVal < <integer>refVal, testName, message);
-			}
-			case string: {
-				assertBase(castedVal < <string> refVal, testName, message);
-			}
-			case float: {
-				float tol := 0.0001;
-				assertBase((castedVal-<float>refVal) < -tol, testName, message);
-			}
-			default: {
-				//TODO
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal < <integer>refVal, testName, message);
+				}
+				case string: {
+					assertBase(castedVal < <string> refVal, testName, message);
+				}
+				case float: {
+					float tol := 0.0001;
+					assertBase((castedVal-<float>refVal) < -tol, testName, message);
+				}
+				default: {
+					assertBase(false, testName, "invalid input type");
+				}
 			}
 		}
 	}
@@ -168,14 +240,16 @@ event Asserts {
 	 * @param testFn action being tested.
      * @param args arguments to pass to testFn.
 	 */
-	static action assertThrows(string testName, any testFn, any args) {
-		try {
-			any temp := testFn.getGenericAction()(args.getEntries());
+	action assertThrows(string testName, any testFn, any args) {
+		if(isEnabled) {
+			try {
+				any temp := testFn.getGenericAction()(args.getEntries());
 
-			string message := "function did not throw error when expecting to";
-			assertBase(false, testName, message);
-		} catch (Exception e) {
-			return;
+				string message := "function did not throw error when expecting to";
+				assertBase(false, testName, message);
+			} catch (Exception e) {
+				return;
+			}
 		}
 	}
 
@@ -185,12 +259,14 @@ event Asserts {
 	 * @param testFn action being tested.
      * @param args arguments to pass to testFn.
 	 */
-	static action assertNoThrow(string testName, any testFn, any args) {
-		try {
-			any temp := testFn.getGenericAction()(args.getEntries());
-		} catch (Exception e) {
-			string message := "function threw error when not expected to: " + e.toString();
-			assertBase(false, testName, message);
+	action assertNoThrow(string testName, any testFn, any args) {
+		if(isEnabled) {
+			try {
+				any temp := testFn.getGenericAction()(args.getEntries());
+			} catch (Exception e) {
+				string message := "function threw error when not expected to: " + e.toString();
+				assertBase(false, testName, message);
+			}
 		}
 	}
 
@@ -201,18 +277,20 @@ event Asserts {
      * @param args arguments to pass to testFn.
      * @param exceptionType type of exception expected to be thrown
 	 */
-	static action assertThrowsException(string testName, any testFn, any args, string exceptionType) {
-		try {
-			any temp := testFn.getGenericAction()(args.getEntries());
+	action assertThrowsException(string testName, any testFn, any args, string exceptionType) {
+		if(isEnabled) {
+			try {
+				any temp := testFn.getGenericAction()(args.getEntries());
 
-			string message := "function did not throw error when expecting to";
-			assertBase(false, testName, message);
-		} catch (Exception e) {
-			if (e.getType() = exceptionType) {
-				return;
-			} else {
-				string message := "function threw " + e.getType() + " when expecting a " + exceptionType + " exception";
+				string message := "function did not throw error when expecting to";
 				assertBase(false, testName, message);
+			} catch (Exception e) {
+				if (e.getType() = exceptionType) {
+					return;
+				} else {
+					string message := "function threw " + e.getType() + " when expecting a " + exceptionType + " exception";
+					assertBase(false, testName, message);
+				}
 			}
 		}
 	}
@@ -223,12 +301,14 @@ event Asserts {
 	 * @param testVal event being tested.
      * @param fieldName name of the field being inspected.
 	 */
-	static action assertContains(string testName, any testVal, string fieldName) {
-		try {
-			string value := testVal.getFieldString(fieldName);
-		} catch (Exception e) {
-			string message := testVal.toString() + " does not contain field " + fieldName;
-			assertBase(false, testName, message);
+	action assertContains(string testName, any testVal, string fieldName) {
+		if(isEnabled) {
+			try {
+				string value := testVal.getFieldString(fieldName);
+			} catch (Exception e) {
+				string message := testVal.toString() + " does not contain field " + fieldName;
+				assertBase(false, testName, message);
+			}
 		}
 	}
 

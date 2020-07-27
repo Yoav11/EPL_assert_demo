@@ -1,5 +1,5 @@
 using com.apama.exceptions.Exception;
-using com.apamax.test.Asserts;
+using com.apamax.test.Assert;
 
 event device {
 	string id;
@@ -18,38 +18,48 @@ event device {
 monitor AssertTest {
 	/** Initialize the application */
 	action onload() {
+		dictionary<string, any> options := {
+			"isEnabled": true,
+			"logLevel": "ERROR"
+		};
+
+		Assert asserter := Assert.create(options);
+
 		device device1 := device.create("abc", "sensor");
 		device device2 := device.create("abcd", "sensor");
 
-		Asserts.assertEquals("stringsEqualTest", "hello world", "hello world");
-		Asserts.assertEquals("objectEqualsTest", device1, device2);
+		asserter.assertEquals("stringsEqualTest", "hello world", "hello world");
+		asserter.assertEquals("objectEqualsTest", device1, device2);
 
-		Asserts.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
-		Asserts.assertNotEquals("intNotEqualsTest", 1, 1);
+		asserter.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
+		asserter.assertNotEquals("intNotEqualsTest", 1, 1);
 
-		Asserts.assertTrue("twoPlusTwoIsFour", (2+2)=4);
-		Asserts.assertTrue("twoPlusTwoIsFive", (2+2)=5);
+		asserter.assertInRange("inRangeTest", 3, 2, 4);
+		asserter.assertInRange("outOfRangeTest", 6, 1, 5);
 
-		Asserts.assertFalse("twoPlusTwoIsNotFive", (2+2)=5);
-		Asserts.assertFalse("twoPlusTwoIsNotFour", (2+2)=4);
+		asserter.assertTrue("twoPlusTwoIsFour", (2+2)=4);
+		asserter.assertTrue("twoPlusTwoIsFive", (2+2)=5);
 
-		Asserts.assertGreaterThan("greaterThanStringTest", "b", "a");
-		Asserts.assertGreaterThan("greaterThanIntTest", 1, 4);
+		asserter.assertFalse("twoPlusTwoIsNotFive", (2+2)=5);
+		asserter.assertFalse("twoPlusTwoIsNotFour", (2+2)=4);
 
-		Asserts.assertLesserThan("lesserThanStringTest", "Hello", "Helloo");
-		Asserts.assertLesserThan("lesserThanFloatTest", -0.19, -0.20);
+		asserter.assertGreaterThan("greaterThanStringTest", "b", "a");
+		asserter.assertGreaterThan("greaterThanIntTest", 1, 4);
 
-		Asserts.assertThrows("throwTest1", addTo1, [2]);
-		Asserts.assertThrows("throwTest2", addTo1, [1]);
+		asserter.assertLesserThan("lesserThanStringTest", "Hello", "Helloo");
+		asserter.assertLesserThan("lesserThanFloatTest", -0.19, -0.20);
 
-		Asserts.assertNoThrow("noThrowTest1", addTo1, [1]);
-		Asserts.assertNoThrow("noThrowTest2", addTo1, [2]);
+		asserter.assertThrows("throwTest1", addTo1, [2]);
+		asserter.assertThrows("throwTest2", addTo1, [1]);
 
-		Asserts.assertThrowsException("specificThrowTest1", addTo1, [2], "IllegalArgumentException");
-		Asserts.assertThrowsException("specificThrowTest2", addTo1, [2], "ArithmeticException");
+		asserter.assertNoThrow("noThrowTest1", addTo1, [1]);
+		asserter.assertNoThrow("noThrowTest2", addTo1, [2]);
 
-		Asserts.assertContains("containsTest1", device1, "id");
-		Asserts.assertContains("containsTest2", device1, "name");
+		asserter.assertThrowsException("specificThrowTest1", addTo1, [2], "IllegalArgumentException");
+		asserter.assertThrowsException("specificThrowTest2", addTo1, [2], "ArithmeticException");
+
+		asserter.assertContains("containsTest1", device1, "id");
+		asserter.assertContains("containsTest2", device1, "name");
 	}
 
 	action addTo1(integer i) returns integer {
