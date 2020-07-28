@@ -14,11 +14,23 @@ event Assert {
 	string logLevel;
 
 	/** Creates an instance of the Assert event to run assertions from.
+	 * this will set private variables logLevel to "ERROR" and isEnabled to true
+	 */
+	static action create() returns Assert {
+		Assert temp := new Assert;
+
+		temp.isEnabled := true;
+		temp.logLevel := "ERROR";
+
+		return temp;
+	}
+
+	/** Creates an instance of the Assert event to run assertions from.
 	 * @param options dictionary<string, any>, options include:
 	 *	<boolean>isEnabled - set to true to enable logging
 	 *	<string>logLevel - either "ERROR" or "DEBUG" sets logging level.
 	 */
-	static action create(dictionary<string, any> options) returns Assert {
+	static action createCustom(dictionary<string, any> options) returns Assert {
 		Assert temp := new Assert;
 
 		if(options.hasKey("isEnabled")) {
@@ -71,6 +83,43 @@ event Assert {
 		}
 	}
 
+	/** 
+     * Asserts that two values are equal. Uses different handling depending on type:
+     *
+     * Integer, string, boolean - uses the '=' operator.
+     * 
+     * float - checks equality within a tolerance of 0.0001.
+     *
+     * others - uses the any .getFields() method as a comparator.
+	 * @param testName name of test being asserted.
+	 * @param testVal value to test.
+     * @param refVal value to compare testVal to.
+	 */
+	action assertEquals(string testName, any testVal, any refVal) {
+		if(isEnabled) {
+			string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
+
+			switch(testVal as castedVal) {
+				case integer: {
+					assertBase(castedVal = <integer>refVal, testName, message);
+				}
+				case string: {
+					assertBase(castedVal = <string> refVal, testName, message);
+				}
+				case boolean: {
+					assertBase(castedVal = <boolean> refVal, testName, message);
+				}
+				case float: {
+					float tol := 0.0001;
+					assertBase((castedVal-<float>refVal).abs() < tol, testName, message);
+				}
+				default: {
+					assertBase(testVal.getFields() = refVal.getFields(), testName, message);
+				}
+			}
+		}
+	}
+
 }
 
 event DeviceCreated {
@@ -78,7 +127,7 @@ event DeviceCreated {
 	integer reqId;
 }
 
-event iotHelper {	
+event iotTestsHelper {	
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
 	constant string DEVICE_TYPE := "testDevice";
@@ -89,9 +138,9 @@ event iotHelper {
 	float MEASUREMENT_THRESHOLD;
 	float ALARM_WAIT_TIMEOUT;
 
-	static action create()  returns iotHelper
+	static action create()  returns iotTestsHelper
 	{
-		iotHelper temp := new iotHelper;
+		iotTestsHelper temp := new iotTestsHelper;
 
 		return temp;
 	}
@@ -161,21 +210,16 @@ event iotHelper {
 		}
 		return reqId;
     }
+
 }
 
 monitor AlarmOnMeasurementThresholdTest {
 	
 	constant string ALARM_TYPE := "ThresholdExceededAlarm";
 	constant float MEASUREMENT_THRESHOLD := 100.0;
-	constant float ALARM_WAIT_TIMEOUT := 10.0;
 
-	dictionary<string, any> options := {
-			"isEnabled": true,
-			"logLevel": "ERROR"
-	};
-
-	Assert asserter := Assert.create(options);
-	iotHelper helper := iotHelper.create();
+	Assert asserter := Assert.create();
+	iotTestsHelper helper := iotTestsHelper.create();
 
 	action onload()
 	{
@@ -188,6 +232,9 @@ monitor AlarmOnMeasurementThresholdTest {
 			integer measurementReqId := helper.sendMeasurement(device.deviceId, MEASUREMENT_THRESHOLD + 10.0);
 			
 			asserter.assertAlarmRaised("aboveThresholdTest", device.deviceId, ALARM_TYPE);
+			on Alarm(source=device.deviceId, type=ALARM_TYPE) as alarm {
+				asserter.assertEquals("alarmSeverityTest", alarm.severity, "MINOR");
+			}
 		}
 
 		on DeviceCreated(reqId=helper.createNewDevice("AlarmOnMeasurementThresholdTestDevice")) as device 

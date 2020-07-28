@@ -23,7 +23,7 @@ monitor AssertTest {
 			"logLevel": "ERROR"
 		};
 
-		Assert asserter := Assert.create(options);
+		Assert asserter := Assert.createCustom(options);
 
 		device device1 := device.create("abc", "sensor");
 		device device2 := device.create("abcd", "sensor");

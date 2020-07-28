@@ -17,10 +17,6 @@ event iotHelper {
 	constant string TEST_DEVICE_PREFIX := "PYSYS_";
 	constant string MEASUREMENT_TYPE := "myMeasurementType";
 
-	string ALARM_TYPE;
-	float MEASUREMENT_THRESHOLD;
-	float ALARM_WAIT_TIMEOUT;
-
 	static action create()  returns iotHelper
 	{
 		iotHelper temp := new iotHelper;
@@ -33,7 +29,7 @@ event iotHelper {
 	@param name The name of our device simulator.
 	@returns The reqId of the ManagedObject event sent to create a device.
 	*/
-	action createNewDevice(string name) returns integer 
+	action createDevice(string name) returns integer 
 	{
 		ManagedObject mo := new ManagedObject;
 		mo.type := DEVICE_TYPE;
