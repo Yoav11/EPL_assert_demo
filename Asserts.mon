@@ -200,7 +200,7 @@ event Assert {
 					assertBase((castedVal-<float>refVal) > tol, testName, message);
 				}
 				default: {
-					assertBase(false, testName, "invalid input type")
+					assertBase(false, testName, "invalid input type");
 				}
 			}
 		}

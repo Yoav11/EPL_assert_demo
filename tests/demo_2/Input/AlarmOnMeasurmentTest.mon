@@ -1,0 +1,204 @@
+using com.apama.exceptions.Exception;
+using com.apama.cumulocity.Measurement;
+using com.apama.cumulocity.ManagedObject;
+using com.apama.cumulocity.ObjectCommitted;
+using com.apama.cumulocity.ObjectCommitFailed;
+using com.apama.cumulocity.Util;
+using com.apama.cumulocity.Alarm;
+
+/**
+ * An assertion class for testing epl applications
+ */
+event Assert {
+	boolean isEnabled;
+	string logLevel;
+
+	/** Creates an instance of the Assert event to run assertions from.
+	 * @param options dictionary<string, any>, options include:
+	 *	<boolean>isEnabled - set to true to enable logging
+	 *	<string>logLevel - either "ERROR" or "DEBUG" sets logging level.
+	 */
+	static action create(dictionary<string, any> options) returns Assert {
+		Assert temp := new Assert;
+
+		if(options.hasKey("isEnabled")) {
+			temp.isEnabled := <boolean>options["isEnabled"];
+		} else {
+			temp.isEnabled := true;
+		}
+
+		if(options.hasKey("logLevel")) {
+			temp.logLevel := <string>options["logLevel"];
+		} else {
+			temp.logLevel := "ERROR";
+		}
+
+		return temp;
+	}
+
+    /** Logs an assertion failure when test does not pass.
+	 * @param pass set to true if a test passes, false if it fails.
+	 * @param testName name of test being asserted.
+     * @param message custom message with information about test failure.
+	 */
+	action assertBase(boolean pass, string testName, string message) {
+		if (not pass) {
+			if(logLevel = "ERROR") {
+				log "FAIL - " + testName + " Assertion error: " + message at ERROR;
+			} else if (logLevel = "DEBUG") {
+				log "FAIL - " + testName + " Assertion error: " + message at DEBUG;
+			} else {
+				log "FAIL - please set a valid log level for Assert instance, use ERROR or DEBUG";
+			}
+		}
+	}
+
+    action assertAlarmRaised(string testName, string deviceId, string alarmType) 
+	{
+		float ALARM_WAIT_TIMEOUT := 10.0;
+
+		on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=deviceId, type=alarmType) {
+			assertBase(false, testName, alarmType + " - Alarm not raised when expected to");
+		}
+	}
+
+	action assertAlarmNotRaised(string testName, string deviceId, string alarmType) 
+	{
+		float ALARM_WAIT_TIMEOUT := 10.0;
+
+		on Alarm(source=deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
+			assertBase(false, testName, alarmType + " - Alarm raised when not expected to");
+		}
+	}
+
+}
+
+event DeviceCreated {
+	string deviceId;
+	integer reqId;
+}
+
+event iotHelper {	
+	constant string VALUE_FRAGMENT_TYPE := "myFragment";
+	constant string VALUE_SERIES_TYPE := "mySeries";
+	constant string DEVICE_TYPE := "testDevice";
+	constant string TEST_DEVICE_PREFIX := "PYSYS_";
+	constant string MEASUREMENT_TYPE := "myMeasurementType";
+
+	string ALARM_TYPE;
+	float MEASUREMENT_THRESHOLD;
+	float ALARM_WAIT_TIMEOUT;
+
+	static action create()  returns iotHelper
+	{
+		iotHelper temp := new iotHelper;
+
+		return temp;
+	}
+
+	/**
+	Creates a device simulator to be the source of the measurement. 
+	@param name The name of our device simulator.
+	@returns The reqId of the ManagedObject event sent to create a device.
+	*/
+	action createNewDevice(string name) returns integer 
+	{
+		ManagedObject mo := new ManagedObject;
+		mo.type := DEVICE_TYPE;
+		
+		// Any devices with naming prefix "PYSYS_" and the c8y_IsDevice property 
+		// will be cleaned from the tenant by the test framework  
+		mo.name := TEST_DEVICE_PREFIX + name; 
+		mo.params.add("c8y_IsDevice", new dictionary<any, any>);
+
+		// Create a ManagedObject in Cumulocity IoT and receive a response event confirming the change
+		integer reqId := Util.generateReqId();
+		send mo.withResponse(reqId, new dictionary<string, string>) to ManagedObject.SEND_CHANNEL;
+
+		// Listener for when device has been created
+		on ObjectCommitted(reqId=reqId) as resp
+		and not ObjectCommitFailed(reqId=reqId)
+		{
+			ManagedObject device := <ManagedObject> resp.object; 
+			log "New simulator device created " + device.id at INFO;
+			send DeviceCreated(device.id, reqId) to "TEST_CHANNEL";
+		}
+		// Listener for if creation of device fails
+		on ObjectCommitFailed(reqId=reqId) as resp
+		and not ObjectCommitted(reqId=reqId)
+		{
+			log "Unable to create simulator device, reason : " + resp.toString() at ERROR;
+			// Cause test to fail early, rather than wait for timeout
+			die;
+		}
+		return reqId;
+	}
+
+	/**
+	Sends a measurement with a given value to Cumulocity IoT.  
+	@param source The id of the ManagedObject that is the source of the measurement. 
+	@param value The value of the measurement to be sent.
+	@returns The reqId of the measurement event.
+	*/
+	action sendMeasurement(string source, float value) returns integer
+	{
+		Measurement m := new Measurement;
+		m.source := source;
+		m.time := currentTime;
+		m.type := MEASUREMENT_TYPE;
+		m.measurements.getOrAddDefault(VALUE_FRAGMENT_TYPE).getOrAddDefault(VALUE_SERIES_TYPE).value := value;
+		
+		integer reqId := Util.generateReqId();
+		send m.withResponse(reqId, new dictionary<string, string>) to Measurement.SEND_CHANNEL;
+
+		// Listener for if creation of measurement fails
+		on ObjectCommitFailed(reqId=reqId) as resp
+		and not ObjectCommitted(reqId=reqId) 
+		{
+			log "Unable to create measurement, reason : " + resp.toString() at ERROR;
+			// Cause test to fail early, rather than wait for timeout
+			die; 
+		}
+		return reqId;
+    }
+}
+
+monitor AlarmOnMeasurementThresholdTest {
+	
+	constant string ALARM_TYPE := "ThresholdExceededAlarm";
+	constant float MEASUREMENT_THRESHOLD := 100.0;
+	constant float ALARM_WAIT_TIMEOUT := 10.0;
+
+	dictionary<string, any> options := {
+			"isEnabled": true,
+			"logLevel": "ERROR"
+	};
+
+	Assert asserter := Assert.create(options);
+	iotHelper helper := iotHelper.create();
+
+	action onload()
+	{
+		monitor.subscribe("TEST_CHANNEL");
+		
+		on DeviceCreated(reqId=helper.createNewDevice("AlarmOnMeasurementThresholdTestDevice")) as device
+		{	
+			// Send measurement and check to see whether an alarm is raised 
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+			integer measurementReqId := helper.sendMeasurement(device.deviceId, MEASUREMENT_THRESHOLD + 10.0);
+			
+			asserter.assertAlarmRaised("aboveThresholdTest", device.deviceId, ALARM_TYPE);
+		}
+
+		on DeviceCreated(reqId=helper.createNewDevice("AlarmOnMeasurementThresholdTestDevice")) as device 
+		{	
+			// Send measurement and check to see whether an alarm is raised 
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+			integer measurementReqId := helper.sendMeasurement(device.deviceId, MEASUREMENT_THRESHOLD - 10.0);
+			
+			asserter.assertAlarmNotRaised("belowThresholdTest", device.deviceId, ALARM_TYPE);
+		}
+
+	}
+	
+}
