@@ -1,3 +1,5 @@
+package com.apamax.test;
+
 using com.apama.cumulocity.Measurement;
 using com.apama.cumulocity.ManagedObject;
 using com.apama.cumulocity.ObjectCommitted;
@@ -10,7 +12,10 @@ event DeviceCreated {
 	integer reqId;
 }
 
-event iotHelper {	
+/**
+ * A set of utility actions for testing EPL applications
+ */
+event iotTestHelper {	
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
 	constant string DEVICE_TYPE := "testDevice";
@@ -25,7 +30,7 @@ event iotHelper {
 	}
 
 	/**
-	Creates a device simulator to be the source of the measurement. 
+	Creates a device simulator. 
 	@param name The name of our device simulator.
 	@returns The reqId of the ManagedObject event sent to create a device.
 	*/

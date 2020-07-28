@@ -3,7 +3,7 @@
   <property environment="env"/>
   <import file="${env.APAMA_HOME}/etc/apama-macros.xml"/>
   <target name="apamadoc">
-    <generate-apamadoc outputDir="./docs" title="ApamaDoc Title">
+    <generate-apamadoc outputDir="./docs" title="">
       <fileset dir="./">
          <include name="**/*.mon"/>
       </fileset>
