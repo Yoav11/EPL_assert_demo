@@ -127,30 +127,30 @@ event DeviceCreated {
 	integer reqId;
 }
 
-event iotTestsHelper {	
+
+/**
+ * A set of utility actions for testing EPL applications
+ */
+event IoTTestHelper {	
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
 	constant string DEVICE_TYPE := "testDevice";
 	constant string TEST_DEVICE_PREFIX := "PYSYS_";
 	constant string MEASUREMENT_TYPE := "myMeasurementType";
 
-	string ALARM_TYPE;
-	float MEASUREMENT_THRESHOLD;
-	float ALARM_WAIT_TIMEOUT;
-
-	static action create()  returns iotTestsHelper
+	static action create()  returns IoTTestHelper
 	{
-		iotTestsHelper temp := new iotTestsHelper;
+		IoTTestHelper temp := new IoTTestHelper;
 
 		return temp;
 	}
 
 	/**
-	Creates a device simulator to be the source of the measurement. 
+	Creates a device simulator. 
 	@param name The name of our device simulator.
 	@returns The reqId of the ManagedObject event sent to create a device.
 	*/
-	action createNewDevice(string name) returns integer 
+	action createDevice(string name) returns integer 
 	{
 		ManagedObject mo := new ManagedObject;
 		mo.type := DEVICE_TYPE;
@@ -210,7 +210,6 @@ event iotTestsHelper {
 		}
 		return reqId;
     }
-
 }
 
 monitor AlarmOnMeasurementThresholdTest {
@@ -231,7 +230,7 @@ monitor AlarmOnMeasurementThresholdTest {
 			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
 			integer measurementReqId := helper.sendMeasurement(device.deviceId, MEASUREMENT_THRESHOLD + 10.0);
 			
-			asserter.assertAlarmRaised("aboveThresholdTest", device.deviceId, ALARM_TYPE);
+			helper.assertAlarmRaised("aboveThresholdTest", device.deviceId, ALARM_TYPE);
 			on Alarm(source=device.deviceId, type=ALARM_TYPE) as alarm {
 				asserter.assertEquals("alarmSeverityTest", alarm.severity, "MINOR");
 			}
