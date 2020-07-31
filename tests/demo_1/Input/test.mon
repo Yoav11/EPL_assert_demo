@@ -28,8 +28,8 @@ monitor AssertTest {
 		device device1 := device.create("abc", "sensor");
 		device device2 := device.create("abcd", "sensor");
 
-		asserter.assertEquals("stringsEqualTest", "hello world", "hello world");
-		asserter.assertEquals("objectEqualsTest", device1, device2);
+		asserter.assertEquals("stringsEqualTest", 1.0d, 1.0d);
+		asserter.assertEquals("floatEqualsTest", 4.54, 4.55);
 
 		asserter.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
 		asserter.assertNotEquals("intNotEqualsTest", 1, 1);

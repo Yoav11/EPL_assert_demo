@@ -53,10 +53,11 @@ event Assert {
 	 */
 	action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
+			string template := "FAILED " + testName +  " - assert ";
 			if(logLevel = "ERROR") {
-				log "FAIL - " + testName + " Assertion error: " + message at ERROR;
+				log template + message at ERROR;
 			} else if (logLevel = "DEBUG") {
-				log "FAIL - " + testName + " Assertion error: " + message at DEBUG;
+				log template + message at DEBUG;
 			} else {
 				log "FAIL - please set a valid log level for Assert instance, use ERROR or DEBUG";
 			}
@@ -77,24 +78,18 @@ event Assert {
 	 */
 	action assertEquals(string testName, any testVal, any refVal) {
 		if(isEnabled) {
-			string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
-
+			string message := testVal.valueToString() + " = " + refVal.valueToString();
 			switch(testVal as castedVal) {
-				case integer: {
-					assertBase(castedVal = <integer>refVal, testName, message);
-				}
-				case string: {
-					assertBase(castedVal = <string> refVal, testName, message);
-				}
-				case boolean: {
-					assertBase(castedVal = <boolean> refVal, testName, message);
+				case decimal: {
+					decimal tol := 1e-398d;
+					assertBase((castedVal-<decimal>refVal).nextafter(1.0d) = tol, testName, message);
 				}
 				case float: {
-					float tol := 0.0001;
-					assertBase((castedVal-<float>refVal).abs() < tol, testName, message);
+					float tol := 5e-324;
+					assertBase((castedVal-<float>refVal).nextafter(1.0) = tol, testName, message);
 				}
 				default: {
-					assertBase(testVal.getFields() = refVal.getFields(), testName, message);
+					assertBase(testVal = refVal, testName, message);
 				}
 			}
 		}
@@ -117,21 +112,16 @@ event Assert {
 			string message := testVal.valueToString() + " = " + refVal.valueToString() + " when expecting values to not equal";
 
 			switch(testVal as castedVal) {
-				case integer: {
-					assertBase(castedVal != <integer>refVal, testName, message);
-				}
-				case string: {
-					assertBase(castedVal != <string> refVal, testName, message);
-				}
-				case boolean: {
-					assertBase(castedVal != <boolean> refVal, testName, message);
+				case decimal: {
+					decimal tol := 1e-398d;
+					assertBase((castedVal-<decimal>refVal).nextafter(1.0d) != tol, testName, message);
 				}
 				case float: {
-					float tol := 0.0001;
-					assertBase((castedVal-<float>refVal).abs() > tol, testName, message);
+					float tol := 5e-324;
+					assertBase((castedVal-<float>refVal).nextafter(1.0) != tol, testName, message);
 				}
 				default: {
-					assertBase(testVal.getFields() != refVal.getFields(), testName, message);
+					assertBase(testVal != refVal, testName, message);
 				}
 			}
 		}
@@ -158,6 +148,9 @@ event Assert {
 				}
 				case float: {
 					assertBase(castedVal >= <float>lowerBound and castedVal <= <float>higherBound, testName, message);
+				}
+				case decimal: {
+					assertBase(castedVal >= <decimal>lowerBound and castedVal <= <decimal>higherBound, testName, message);
 				}
 				default: {
 					assertBase(false, testName, "invalid input type");
@@ -210,8 +203,12 @@ event Assert {
 					assertBase(castedVal > <string> refVal, testName, message);
 				}
 				case float: {
-					float tol := 0.0001;
+					float tol := 5e-324;
 					assertBase((castedVal-<float>refVal) > tol, testName, message);
+				}
+				case decimal: {
+					decimal tol := 1e-398d;
+					assertBase((castedVal-<decimal>refVal) > tol, testName, message);
 				}
 				default: {
 					assertBase(false, testName, "invalid input type");
@@ -240,6 +237,10 @@ event Assert {
 				case float: {
 					float tol := 0.0001;
 					assertBase((castedVal-<float>refVal) < -tol, testName, message);
+				}
+				case decimal: {
+					decimal tol := 1e-398d;
+					assertBase((castedVal-<decimal>refVal) < -tol, testName, message);
 				}
 				default: {
 					assertBase(false, testName, "invalid input type");
