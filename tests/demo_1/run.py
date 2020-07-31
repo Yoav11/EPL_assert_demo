@@ -17,5 +17,11 @@ class PySysTest(BaseTest):
 		corr.shutdown()
 
 	def validate(self):
-		self.assertGrep('correlator.log', expr=' ERROR ', contains=False)
+		with open(os.path.join(self.output, "correlator.log")) as f:
+			for line in f:
+				if("ERROR" in line):
+					msg = line.split("-")[3:]
+					msg = "-".join(msg)
+					self.assertThat("False", assertMessage=msg)	
+		
 		
