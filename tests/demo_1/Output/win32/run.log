@@ -1,17 +1,33 @@
-2020-07-29 16:20:22,274 INFO  ==============================================================
-2020-07-29 16:20:22,275 INFO  Id   : demo_1
-2020-07-29 16:20:22,276 INFO  ==============================================================
-2020-07-29 16:20:22,300 INFO  Started correlator<localhost:29560> with process id 21944
-2020-07-29 16:20:22,874 INFO     Component correlator<pid 21944 on localhost:29560> is now running
-2020-07-29 16:20:22,998 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
-2020-07-29 16:20:23,114 INFO  Executed engine_inject <correlator> [test.mon], exit status 0
-2020-07-29 16:20:23,226 INFO  Executed manage <correlator> [-r flushAllQueues], exit status 0
-2020-07-29 16:20:23,289 INFO  Executed shutdown <correlator>, exit status 0
-2020-07-29 16:20:23,378 WARN  Grep on correlator.log does not contain " ERROR " failed with: "2020-07-29 16:20:23.078 ERROR [14888] - AssertTest [1] FAILED floatEqualsTest - assert 4.54 = 4.55" ... failed [run.py:20]
-2020-07-29 16:20:23,384 INFO  
-2020-07-29 16:20:23,385 INFO  cleanup:
-2020-07-29 16:20:23,386 INFO  
-2020-07-29 16:20:23,386 INFO  Test duration: 1.11 secs
-2020-07-29 16:20:23,387 INFO  Test final outcome:  FAILED
-2020-07-29 16:20:23,387 INFO  Test outcome reason: Grep on correlator.log does not contain " ERROR " failed with: "2020-07-29 16:20:23.078 ERROR [14888] - AssertTest [1] FAILED floatEqualsTest - assert 4.54 = 4.55"
-2020-07-29 16:20:23,392 INFO  
+2020-07-31 16:45:15,665 INFO  ==============================================================
+2020-07-31 16:45:15,665 INFO  Id   : demo_1
+2020-07-31 16:45:15,668 INFO  ==============================================================
+2020-07-31 16:45:15,696 INFO  Started correlator<localhost:45603> with process id 21448
+2020-07-31 16:45:16,288 INFO     Component correlator<pid 21448 on localhost:45603> is now running
+2020-07-31 16:45:16,404 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
+2020-07-31 16:45:16,519 INFO  Executed engine_inject <correlator> [test.mon], exit status 0
+2020-07-31 16:45:16,579 INFO  Executed manage <correlator> [-r flushAllQueues], exit status 0
+2020-07-31 16:45:16,639 INFO  Executed shutdown <correlator>, exit status 0
+2020-07-31 16:45:16,769 WARN  AssertTest [1] FAILED sensors should be the same: assertEquals - assert actual = expected ... failed [run.py:31]
+2020-07-31 16:45:16,771 INFO  		expected: device("CZ-3","droid","127.[91m0.0.1")[0m
+2020-07-31 16:45:16,772 INFO  		actual: device("CZ-3","droid","127.[91m2.0.1")[0m
+2020-07-31 16:45:16,773 INFO  		                                   ^
+2020-07-31 16:45:16,775 WARN  AssertTest [1] FAILED log messages should be the same : assertEquals - assert actual = expected ... failed [run.py:31]
+2020-07-31 16:45:16,781 INFO  		expected: Executed engine_[91mdeploy <correlator> [test.mon][0m
+2020-07-31 16:45:16,782 INFO  		actual: Executed engine_[91minject <correlator> [test.mon][0m
+2020-07-31 16:45:16,785 INFO  		                        ^
+2020-07-31 16:45:16,791 WARN  AssertTest [1] FAILED intNotEqualsTest: 1 = 1 when expecting values to not equal ... failed [run.py:31]
+2020-07-31 16:45:16,796 WARN  AssertTest [1] FAILED outOfRangeTest: 6 is not in the range 1-5 ... failed [run.py:31]
+2020-07-31 16:45:16,800 WARN  AssertTest [1] FAILED twoPlusTwoIsFive: expression is false when expecting true ... failed [run.py:31]
+2020-07-31 16:45:16,810 WARN  AssertTest [1] FAILED twoPlusTwoIsNotFive: expression is true when expecting false ... failed [run.py:31]
+2020-07-31 16:45:16,813 WARN  AssertTest [1] FAILED greaterThanIntTest: 1 <= 4 ... failed [run.py:31]
+2020-07-31 16:45:16,819 WARN  AssertTest [1] FAILED lesserThanFloatTest: -.19 >= -.2 ... failed [run.py:31]
+2020-07-31 16:45:16,826 WARN  AssertTest [1] FAILED throwTest2: function did not throw error when expecting to ... failed [run.py:31]
+2020-07-31 16:45:16,829 WARN  AssertTest [1] FAILED noThrowTest2: function threw error when not expected to: com.apama.exceptions.Exception("Argument is not 1","IllegalArgumentException") ... failed [run.py:31]
+2020-07-31 16:45:16,837 WARN  AssertTest [1] FAILED specificThrowTest2: function threw IllegalArgumentException when expecting a ArithmeticException exception ... failed [run.py:31]
+2020-07-31 16:45:16,840 INFO  
+2020-07-31 16:45:16,841 INFO  cleanup:
+2020-07-31 16:45:16,843 INFO  
+2020-07-31 16:45:16,843 INFO  Test duration: 1.18 secs
+2020-07-31 16:45:16,849 INFO  Test final outcome:  FAILED
+2020-07-31 16:45:16,850 INFO  Test outcome reason: AssertTest [1] FAILED sensors should be the same: assertEquals - assert actual = expected (+10 other failures)
+2020-07-31 16:45:16,851 INFO  

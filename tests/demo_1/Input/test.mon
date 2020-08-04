@@ -2,14 +2,16 @@ using com.apama.exceptions.Exception;
 using com.apamax.test.Assert;
 
 event device {
-	string id;
+	string name;
 	string type;
+	string ip;
 
-	static action create(string id, string type) returns device {
+	static action create(string name, string type, string ip) returns device {
 		device temp := new device;
 
-		temp.id := id;
+		temp.name := name;
 		temp.type := type;
+		temp.ip := ip;
 		return temp;
 	}
 }
@@ -25,11 +27,11 @@ monitor AssertTest {
 
 		Assert asserter := Assert.createCustom(options);
 
-		device device1 := device.create("abc", "sensor");
-		device device2 := device.create("abcd", "sensor");
+		device device1 := device.create("CZ-3", "droid", "127.0.0.1");
+		device device2 := device.create("CZ-3", "droid", "127.2.0.1");
 
-		asserter.assertEquals("stringsEqualTest", 1.0d, 1.0d);
-		asserter.assertEquals("floatEqualsTest", 4.54, 4.55);
+		asserter.assertEquals("sensors should be the same", device2, device1);
+		asserter.assertEquals("log messages should be the same ", "Executed engine_inject <correlator> [test.mon]", "Executed engine_deploy <correlator> [test.mon]");
 
 		asserter.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
 		asserter.assertNotEquals("intNotEqualsTest", 1, 1);

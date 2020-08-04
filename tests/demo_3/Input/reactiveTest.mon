@@ -1,0 +1,192 @@
+using com.apama.exceptions.Exception;
+
+using com.apama.cumulocity.Measurement;
+using com.apama.cumulocity.ManagedObject;
+using com.apama.cumulocity.ObjectCommitted;
+using com.apama.cumulocity.ObjectCommitFailed;
+using com.apama.cumulocity.Util;
+using com.apama.cumulocity.Alarm;
+
+event DeviceCreated {
+	string deviceId;
+	integer reqId;
+}
+
+event TestHelper {
+	constant string VALUE_FRAGMENT_TYPE := "myFragment";
+	constant string VALUE_SERIES_TYPE := "mySeries";
+	constant string DEVICE_TYPE := "testDevice";
+	constant string TEST_DEVICE_PREFIX := "PYSYS_";
+	constant string MEASUREMENT_TYPE := "myMeasurementType";
+
+    string testId;
+	string logLevel;
+	boolean enabled;
+    dictionary<string, integer> devices;
+ 
+    //Handlers - set to default actions on test helper but able to change them....
+    action<string> errFn;
+    action<any> completeFn;
+ 
+    //
+    // Set up actions
+    //
+    action onError(action<string> f) returns TestHelper {
+        self.errFn := f;
+        return self;
+    }
+ 
+    action onComplete(action<any> f) returns TestHelper {
+        self.completeFn := f;
+        return self;
+    }
+ 
+    //
+    //operators
+    //
+    static action create(string testId) returns TestHelper {
+        TestHelper temp := new TestHelper;
+        temp.testId := testId;
+		temp.logLevel := "ERROR";
+		temp.enabled := true;
+		temp.errFn := temp.defaultError;
+        return temp;
+    }
+
+	action enable(boolean enabled) returns TestHelper {
+        self.enabled := enabled;
+        return self;
+    }
+ 
+    action createDevice(string name) returns TestHelper {
+		if(enabled) {
+			ManagedObject mo := new ManagedObject;
+			mo.type := DEVICE_TYPE;
+			mo.name := TEST_DEVICE_PREFIX + name; 
+			mo.params.add("c8y_IsDevice", new dictionary<any, any>);
+
+			integer reqId := Util.generateReqId();
+			send mo.withResponse(reqId, new dictionary<string, string>) to ManagedObject.SEND_CHANNEL;
+
+			on ObjectCommitted(reqId=reqId) as resp
+			and not ObjectCommitFailed(reqId=reqId)
+			{
+				ManagedObject device := <ManagedObject> resp.object; 
+				log "New simulator device created " + device.id at INFO;
+				send DeviceCreated(device.id, reqId) to "TEST_CHANNEL";
+			}
+
+			on ObjectCommitFailed(reqId=reqId) as resp
+			and not ObjectCommitted(reqId=reqId)
+			{
+				log "Unable to create simulator device, reason : " + resp.toString() at ERROR;
+				die;
+			}
+
+			self.devices[name] := reqId;
+		}
+		return self;
+    }
+ 
+	action sendMeasurementOn(string source, float value) returns TestHelper {
+		if(enabled) {
+			on DeviceCreated(reqId=self.devices[source]) as device {
+				Measurement m := new Measurement;
+				m.source := device.deviceId;
+				m.time := currentTime;
+				m.type := MEASUREMENT_TYPE;
+				m.measurements.getOrAddDefault(VALUE_FRAGMENT_TYPE).getOrAddDefault(VALUE_SERIES_TYPE).value := value;
+				
+				integer reqId := Util.generateReqId();
+				send m.withResponse(reqId, new dictionary<string, string>) to Measurement.SEND_CHANNEL;
+
+				on ObjectCommitFailed(reqId=reqId) as resp
+				and not ObjectCommitted(reqId=reqId) 
+				{
+					log "Unable to create measurement, reason : " + resp.toString() at ERROR;
+					die; 
+				}
+			}
+		}
+		return self;
+	}
+
+    action assertDeviceCreated(string id) returns TestHelper {
+        return self;
+    }
+
+	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestHelper {
+		if(enabled) {
+			float ALARM_WAIT_TIMEOUT := 10.0;
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+
+			on DeviceCreated(reqId=self.devices[deviceName]) as device {
+				on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=device.deviceId, type=alarmType) {
+					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+				}
+			}
+		}
+
+        return self;
+	}
+
+	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestHelper {
+		if(enabled) {
+			float ALARM_WAIT_TIMEOUT := 10.0;
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+
+			on DeviceCreated(reqId=self.devices[deviceName]) as device {
+				on Alarm(source=device.deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
+					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+				}
+			}
+		}
+
+		return self;
+	}
+  
+    //
+    //utility default actions
+    //
+    action finishTest() {
+    }
+
+	action defaultError(string message) {
+		if(self.logLevel = "ERROR") {
+			log "FAIL - " + self.testId + ": " + message at ERROR;
+		} else if (self.logLevel = "DEBUG") {
+			log "FAIL - " + self.testId + ": " + message at DEBUG;
+		} else {
+			log "FAIL - please set a valid log level for Assert instance, use ERROR or DEBUG";
+		}
+	}
+
+}
+ 
+monitor asyncTest {
+	action onload() {
+		float MEASUREMENT_THRESHOLD := 100.0;
+		string ALARM_TYPE := "ThresholdExceededAlarm";
+
+		monitor.subscribe("TEST_CHANNEL");
+
+		//Test 1
+		TestHelper
+			.create("test1")
+			.enable(true)
+			.createDevice("myDeviceId")
+			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD + 10.0)
+			.assertAlarmRaised("should raise an alarm", "myDeviceId", ALARM_TYPE)
+			.finishTest();
+		
+		//Test2
+		TestHelper
+			.create("test2")
+			.enable(true)
+			.createDevice("myDeviceId2")
+			.sendMeasurementOn("myDeviceId2",MEASUREMENT_THRESHOLD - 10.0)
+			.assertAlarmNotRaised("should not raise an alarm", "myDeviceId2", ALARM_TYPE)
+			.finishTest();
+	}
+
+}

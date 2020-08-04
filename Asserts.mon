@@ -53,7 +53,7 @@ event Assert {
 	 */
 	action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
-			string template := "FAILED " + testName +  " - assert ";
+			string template := "FAILED " + testName + ": ";
 			if(logLevel = "ERROR") {
 				log template + message at ERROR;
 			} else if (logLevel = "DEBUG") {
@@ -76,20 +76,23 @@ event Assert {
 	 * @param testVal value to test.
      * @param refVal value to compare testVal to.
 	 */
-	action assertEquals(string testName, any testVal, any refVal) {
+	action assertEquals(string testName, any actual, any expected) {
 		if(isEnabled) {
-			string message := testVal.valueToString() + " = " + refVal.valueToString();
-			switch(testVal as castedVal) {
+			string message := "assertEquals - assert actual = expected\nactual: "+actual.valueToString()+"\n"+"expected: "+expected.valueToString();
+			switch(actual as castedVal) {
 				case decimal: {
 					decimal tol := 1e-398d;
-					assertBase((castedVal-<decimal>refVal).nextafter(1.0d) = tol, testName, message);
+					assertBase((castedVal-<decimal>expected).nextafter(1.0d) = tol, testName, message);
 				}
 				case float: {
 					float tol := 5e-324;
-					assertBase((castedVal-<float>refVal).nextafter(1.0) = tol, testName, message);
+					assertBase((castedVal-<float>expected).nextafter(1.0) = tol, testName, message);
+				}
+				case string: {
+					assertBase(castedVal = <string>expected, testName, message);
 				}
 				default: {
-					assertBase(testVal = refVal, testName, message);
+					assertBase(castedVal = expected, testName, message);
 				}
 			}
 		}
