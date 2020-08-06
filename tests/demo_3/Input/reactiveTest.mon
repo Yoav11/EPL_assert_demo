@@ -5,11 +5,60 @@ using com.apama.cumulocity.ManagedObject;
 using com.apama.cumulocity.ObjectCommitted;
 using com.apama.cumulocity.ObjectCommitFailed;
 using com.apama.cumulocity.Util;
+using com.apama.cumulocity.FindManagedObject;
 using com.apama.cumulocity.Alarm;
 
 event DeviceCreated {
 	string deviceId;
 	integer reqId;
+}
+
+event TestResults {
+	integer reqId;
+	string testId;
+
+	dictionary<string, DeviceCreated> devices;
+	sequence<ManagedObject> managedObjects;
+
+	action defaultError(string message) {
+		log "FAIL - " + self.testId + ": " + message at ERROR;
+	}
+
+	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestResults {
+		try {
+			float ALARM_WAIT_TIMEOUT := 10.0;
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+
+			on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=devices[deviceName].deviceId, type=alarmType) {
+				self.defaultError(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+			}
+		} catch(com.apama.exceptions.Exception e) {
+			log e.toString() at ERROR;
+		}
+
+        return self;
+	}
+
+	action assertEquals(any testVal, any refVal) returns TestResults {
+		string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
+
+		switch(testVal as castedVal) {
+			case string: {
+				if(castedVal != <string>refVal) {
+					self.defaultError(message + " {testVal: " + castedVal +", refVal: " + <string>refVal + "}");
+				}
+			}
+		}
+
+		return self;
+	}
+
+	action finishTest() {}
+}
+
+event TestStep {
+	string status;
+	string id;
 }
 
 event TestHelper {
@@ -22,7 +71,12 @@ event TestHelper {
     string testId;
 	string logLevel;
 	boolean enabled;
-    dictionary<string, integer> devices;
+
+	integer steps;
+	integer finishedSteps;
+
+    dictionary<string, DeviceCreated> devices;
+	sequence<ManagedObject> managedObjects;
  
     //Handlers - set to default actions on test helper but able to change them....
     action<string> errFn;
@@ -60,6 +114,10 @@ event TestHelper {
  
     action createDevice(string name) returns TestHelper {
 		if(enabled) {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "createDevice";
+
 			ManagedObject mo := new ManagedObject;
 			mo.type := DEVICE_TYPE;
 			mo.name := TEST_DEVICE_PREFIX + name; 
@@ -73,7 +131,12 @@ event TestHelper {
 			{
 				ManagedObject device := <ManagedObject> resp.object; 
 				log "New simulator device created " + device.id at INFO;
+
+				self.devices[name] := DeviceCreated(device.id, reqId);
 				send DeviceCreated(device.id, reqId) to "TEST_CHANNEL";
+
+				step.status := "success";
+				send step to "TEST_CHANNEL";
 			}
 
 			on ObjectCommitFailed(reqId=reqId) as resp
@@ -83,14 +146,19 @@ event TestHelper {
 				die;
 			}
 
-			self.devices[name] := reqId;
+			self.devices[name] := DeviceCreated("", reqId);
+
 		}
 		return self;
     }
  
 	action sendMeasurementOn(string source, float value) returns TestHelper {
 		if(enabled) {
-			on DeviceCreated(reqId=self.devices[source]) as device {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "sendMeasurementOn";
+
+			on DeviceCreated(reqId=self.devices[source].reqId) as device {
 				Measurement m := new Measurement;
 				m.source := device.deviceId;
 				m.time := currentTime;
@@ -99,6 +167,9 @@ event TestHelper {
 				
 				integer reqId := Util.generateReqId();
 				send m.withResponse(reqId, new dictionary<string, string>) to Measurement.SEND_CHANNEL;
+
+				step.status := "success";
+				send step to "TEST_CHANNEL";
 
 				on ObjectCommitFailed(reqId=reqId) as resp
 				and not ObjectCommitted(reqId=reqId) 
@@ -111,33 +182,93 @@ event TestHelper {
 		return self;
 	}
 
+	action sendManagedObject(ManagedObject mo) returns TestHelper {
+		if(enabled) {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "sendManagedObject";
+
+			integer reqId := Util.generateReqId();
+			send mo.withResponse(reqId, new dictionary<string, string>) to ManagedObject.SEND_CHANNEL;
+
+			on ObjectCommitted(reqId=reqId) as resp
+			and not ObjectCommitFailed(reqId=reqId)
+			{
+				ManagedObject device := <ManagedObject> resp.object; 
+				log "New managedObject created " + device.id at INFO;
+
+				step.status := "success";
+				send step to "TEST_CHANNEL";
+			}
+
+			on ObjectCommitFailed(reqId=reqId) as resp
+			and not ObjectCommitted(reqId=reqId) 
+			{
+				log "Unable to send event, reason : " + resp.toString() at ERROR;
+				die; 
+			}
+		}
+		return self;
+	}
+
+	action findManagedObject(string type) returns TestHelper {
+		if(enabled) {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "findManagedObject";
+
+			integer reqId := com.apama.cumulocity.Util.generateReqId();
+
+			com.apama.cumulocity.FindManagedObject request := new com.apama.cumulocity.FindManagedObject;
+			request.reqId := reqId;
+
+			request.params.add("type", type);
+
+			monitor.subscribe(com.apama.cumulocity.FindManagedObjectResponse.SUBSCRIBE_CHANNEL);
+
+			on all com.apama.cumulocity.FindManagedObjectResponse(reqId=reqId) as response
+			and not com.apama.cumulocity.FindManagedObjectResponseAck(reqId=reqId) 
+			{
+				log "Received Managed Object " + response.managedObject.name.toString() at INFO;
+				self.managedObjects.append(response.managedObject);
+			}
+
+			on com.apama.cumulocity.FindManagedObjectResponseAck(reqId=reqId) as requestCompleted
+			{
+				log "Received all Managed Object(s) for request " + 
+				requestCompleted.reqId.toString() at INFO;
+			
+				monitor.unsubscribe(com.apama.cumulocity.FindManagedObjectResponse.SUBSCRIBE_CHANNEL);
+
+				step.status := "success";
+				send step to "TEST_CHANNEL";
+			}
+			
+			send request to com.apama.cumulocity.FindManagedObject.SEND_CHANNEL;
+		}
+
+		return self;
+	}
+
     action assertDeviceCreated(string id) returns TestHelper {
         return self;
     }
 
-	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestHelper {
-		if(enabled) {
-			float ALARM_WAIT_TIMEOUT := 10.0;
-			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
-
-			on DeviceCreated(reqId=self.devices[deviceName]) as device {
-				on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=device.deviceId, type=alarmType) {
-					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
-				}
-			}
-		}
-
-        return self;
-	}
-
 	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestHelper {
 		if(enabled) {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "assertAlarmNotRaised";
+
 			float ALARM_WAIT_TIMEOUT := 10.0;
 			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
 
-			on DeviceCreated(reqId=self.devices[deviceName]) as device {
+			on DeviceCreated(reqId=self.devices[deviceName].reqId) as device {
 				on Alarm(source=device.deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
 					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+
+					step.status := "completed";
+					send step to "TEST_CHANNEL";
 				}
 			}
 		}
@@ -148,7 +279,26 @@ event TestHelper {
     //
     //utility default actions
     //
-    action finishTest() {
+    action finishTest() returns integer{
+		integer reqId := com.apama.cumulocity.Util.generateReqId();
+		TestResults temp := new TestResults;
+
+		on all TestStep(status="success") {
+			finishedSteps := finishedSteps + 1;
+
+			if(finishedSteps = steps) {
+				temp.devices := self.devices;
+				temp.managedObjects := self.managedObjects;
+				temp.reqId := reqId;
+				temp.testId := testId;
+
+				log self.devices.toString() at ERROR;
+
+				send temp to "TEST_CHANNEL";
+			}
+		}
+
+		return reqId;
     }
 
 	action defaultError(string message) {
@@ -162,6 +312,12 @@ event TestHelper {
 	}
 
 }
+
+// ----------------------------------------------------------
+//
+// Anything above this line would be bundled.
+//
+// ----------------------------------------------------------
  
 monitor asyncTest {
 	action onload() {
@@ -169,24 +325,30 @@ monitor asyncTest {
 		string ALARM_TYPE := "ThresholdExceededAlarm";
 
 		monitor.subscribe("TEST_CHANNEL");
+		ManagedObject mo := new ManagedObject;
+		mo.type := "testObject";
+		mo.name := "r2d2";
 
 		//Test 1
-		TestHelper
+		integer reqId := TestHelper
 			.create("test1")
 			.enable(true)
+			.verbose()
 			.createDevice("myDeviceId")
-			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD + 10.0)
-			.assertAlarmRaised("should raise an alarm", "myDeviceId", ALARM_TYPE)
+			.createDevice("myDeviceId2")
+			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD - 10.0)
+			.sendMeasurementOn("myDeviceId2", MEASUREMENT_THRESHOLD + 10.0)
+			.sendManagedObject(mo)
+			.findManagedObject("testObject")
 			.finishTest();
 		
-		//Test2
-		TestHelper
-			.create("test2")
-			.enable(true)
-			.createDevice("myDeviceId2")
-			.sendMeasurementOn("myDeviceId2",MEASUREMENT_THRESHOLD - 10.0)
-			.assertAlarmNotRaised("should not raise an alarm", "myDeviceId2", ALARM_TYPE)
-			.finishTest();
+		on TestResults(reqId=reqId) as resp {
+			resp
+				.assertAlarmRaised("should raise an alarm", "myDeviceId", ALARM_TYPE)
+				.assertAlarmRaised("should raise an alarm", "myDeviceId2", ALARM_TYPE)
+				.assertEquals(resp.managedObjects[0].name, "c3p0")
+				.finishTest();
+		}
 	}
 
 }

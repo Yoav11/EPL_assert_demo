@@ -1,33 +1,18 @@
-2020-07-31 16:45:15,665 INFO  ==============================================================
-2020-07-31 16:45:15,665 INFO  Id   : demo_1
-2020-07-31 16:45:15,668 INFO  ==============================================================
-2020-07-31 16:45:15,696 INFO  Started correlator<localhost:45603> with process id 21448
-2020-07-31 16:45:16,288 INFO     Component correlator<pid 21448 on localhost:45603> is now running
-2020-07-31 16:45:16,404 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
-2020-07-31 16:45:16,519 INFO  Executed engine_inject <correlator> [test.mon], exit status 0
-2020-07-31 16:45:16,579 INFO  Executed manage <correlator> [-r flushAllQueues], exit status 0
-2020-07-31 16:45:16,639 INFO  Executed shutdown <correlator>, exit status 0
-2020-07-31 16:45:16,769 WARN  AssertTest [1] FAILED sensors should be the same: assertEquals - assert actual = expected ... failed [run.py:31]
-2020-07-31 16:45:16,771 INFO  		expected: device("CZ-3","droid","127.[91m0.0.1")[0m
-2020-07-31 16:45:16,772 INFO  		actual: device("CZ-3","droid","127.[91m2.0.1")[0m
-2020-07-31 16:45:16,773 INFO  		                                   ^
-2020-07-31 16:45:16,775 WARN  AssertTest [1] FAILED log messages should be the same : assertEquals - assert actual = expected ... failed [run.py:31]
-2020-07-31 16:45:16,781 INFO  		expected: Executed engine_[91mdeploy <correlator> [test.mon][0m
-2020-07-31 16:45:16,782 INFO  		actual: Executed engine_[91minject <correlator> [test.mon][0m
-2020-07-31 16:45:16,785 INFO  		                        ^
-2020-07-31 16:45:16,791 WARN  AssertTest [1] FAILED intNotEqualsTest: 1 = 1 when expecting values to not equal ... failed [run.py:31]
-2020-07-31 16:45:16,796 WARN  AssertTest [1] FAILED outOfRangeTest: 6 is not in the range 1-5 ... failed [run.py:31]
-2020-07-31 16:45:16,800 WARN  AssertTest [1] FAILED twoPlusTwoIsFive: expression is false when expecting true ... failed [run.py:31]
-2020-07-31 16:45:16,810 WARN  AssertTest [1] FAILED twoPlusTwoIsNotFive: expression is true when expecting false ... failed [run.py:31]
-2020-07-31 16:45:16,813 WARN  AssertTest [1] FAILED greaterThanIntTest: 1 <= 4 ... failed [run.py:31]
-2020-07-31 16:45:16,819 WARN  AssertTest [1] FAILED lesserThanFloatTest: -.19 >= -.2 ... failed [run.py:31]
-2020-07-31 16:45:16,826 WARN  AssertTest [1] FAILED throwTest2: function did not throw error when expecting to ... failed [run.py:31]
-2020-07-31 16:45:16,829 WARN  AssertTest [1] FAILED noThrowTest2: function threw error when not expected to: com.apama.exceptions.Exception("Argument is not 1","IllegalArgumentException") ... failed [run.py:31]
-2020-07-31 16:45:16,837 WARN  AssertTest [1] FAILED specificThrowTest2: function threw IllegalArgumentException when expecting a ArithmeticException exception ... failed [run.py:31]
-2020-07-31 16:45:16,840 INFO  
-2020-07-31 16:45:16,841 INFO  cleanup:
-2020-07-31 16:45:16,843 INFO  
-2020-07-31 16:45:16,843 INFO  Test duration: 1.18 secs
-2020-07-31 16:45:16,849 INFO  Test final outcome:  FAILED
-2020-07-31 16:45:16,850 INFO  Test outcome reason: AssertTest [1] FAILED sensors should be the same: assertEquals - assert actual = expected (+10 other failures)
-2020-07-31 16:45:16,851 INFO  
+2020-08-06 10:40:30,767 INFO  ==============================================================
+2020-08-06 10:40:30,767 INFO  Id   : demo_1
+2020-08-06 10:40:30,773 INFO  ==============================================================
+2020-08-06 10:40:30,793 INFO  Started correlator<localhost:16935> with process id 24824
+2020-08-06 10:40:31,363 INFO     Component correlator<pid 24824 on localhost:16935> is now running
+2020-08-06 10:40:31,473 INFO  Executed engine_inject <correlator> [Asserts.mon], exit status 0
+2020-08-06 10:40:31,534 WARN  Executed engine_inject <correlator> [test.mon], exit status 2
+2020-08-06 10:40:31,535 WARN     MonitorScript injection failed: test.mon: Error on line 30: trying to initialise an item of a dictionary<string,boolean> with a string expression
+2020-08-06 10:40:31,568 WARN  engine_inject <correlator> [test.mon] failed: MonitorScript injection failed: test.mon: Error on line 30: trying to initialise an item of a dictionary<string,boolean> with a string expression ... blocked [correlator.py:909,correlator.py:434,run.py:15]
+2020-08-06 10:40:31,570 WARN  Aborted test due to abortOnError set to true
+2020-08-06 10:40:31,577 INFO  
+2020-08-06 10:40:31,578 INFO  cleanup:
+2020-08-06 10:40:31,639 INFO  Executed shutdown <correlator>, exit status 0
+2020-08-06 10:40:31,739 INFO  
+2020-08-06 10:40:31,739 INFO  Test duration: 0.97 secs
+2020-08-06 10:40:31,741 INFO  Test final outcome:  BLOCKED
+2020-08-06 10:40:31,745 INFO  Test outcome reason: engine_inject <correlator> [test.mon] failed: MonitorScript injection failed: test.mon: Error on line 30: trying to initialise an item of a dictionary<string,boolean> with a string expression
+2020-08-06 10:40:31,749 INFO  
