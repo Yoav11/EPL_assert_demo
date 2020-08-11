@@ -30,6 +30,16 @@ event c8yObjectComparator {
 		}
 }
 
+event stringComparator {
+		action compare(sequence<string> args) returns boolean {
+			if(args[0] = args[1]) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+}
+
 event TestExecuter {
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
@@ -298,21 +308,27 @@ event TestExecuter {
 	}
 
 	action assertFn(string message, any comparator, sequence<string> args) returns TestExecuter {
-		if(args[0] = "managedObjects") {
-			on TestStep(id="findManagedObject") {
-				try {
-					comparator.setField("mos", self.managedObjects);
-					action<sequence<string>> returns boolean compare := <action<sequence<string>> returns boolean> comparator.getAction("compare");
+			if(args[0] = "managedObjects") {
+				on TestStep(id="findManagedObject") {
+					try {
+						comparator.setField("mos", self.managedObjects);
+						action<sequence<string>> returns boolean compare := <action<sequence<string>> returns boolean> comparator.getAction("compare");
 
-					if(compare(args) = false) {
-						self.defaultError(message + " {comparator: " + "-" +", args: " + args.toString() + "}");
+						if(compare(args) = false) {
+							self.defaultError(message + " {comparator: " + "-" +", args: " + args.toString() + "}");
+						}
+
+					} catch(Exception e) {
+						log e.toString() at ERROR;
 					}
+				}
+			} else {
+				action<sequence<string>> returns boolean compare := <action<sequence<string>> returns boolean> comparator.getAction("compare");
 
-				} catch(Exception e) {
-					log e.toString() at ERROR;
+				if(compare(args) = false) {
+					self.defaultError(message + " {comparator: " + "-" +", args: " + args.toString() + "}");
 				}
 			}
-		}
 
 		return self;
 	}
@@ -371,6 +387,8 @@ monitor asyncTest {
 			.sendManagedObject(mo)
 			.findManagedObject({"type": "testObject"})
 			.assertFn("object name should be equal", new c8yObjectComparator, ["managedObjects", "0", "name", "c2po"])
+
+			.assertFn("strings should be equal", new stringComparator, ["hello", "helllo"])
 
 			.run();
 	}
