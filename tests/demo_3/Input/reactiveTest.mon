@@ -1,4 +1,3 @@
-
 using com.apama.exceptions.Exception;
 
 using com.apama.cumulocity.Measurement;
@@ -14,8 +13,13 @@ event DeviceCreated {
 	integer reqId;
 }
 
-event TestResults {
-	integer reqId;
+event ValidatorLoaded {
+	integer validateId;
+	string status;
+}
+
+event TestValidator {
+	integer validateId;
 	string testId;
 
 	dictionary<string, DeviceCreated> devices;
@@ -25,7 +29,23 @@ event TestResults {
 		log "FAIL - " + self.testId + ": " + message at ERROR;
 	}
 
-	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestResults {
+	action start() returns TestValidator {
+		ValidatorLoaded temp := new ValidatorLoaded;
+		temp.validateId := self.validateId;
+
+		on TestValidator(validateId=self.validateId) as resp {
+			self.devices := resp.devices;
+			self.managedObjects := resp.managedObjects;
+			self.testId := resp.testId;
+
+			temp.status := "loaded";
+			send temp to "TEST_CHANNEL";
+		}
+
+		return self;
+	}
+
+	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestValidator {
 		try {
 			float ALARM_WAIT_TIMEOUT := 10.0;
 			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
@@ -40,7 +60,22 @@ event TestResults {
         return self;
 	}
 
-	action assertEquals(any testVal, any refVal) returns TestResults {
+	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestValidator {
+		try {
+			float ALARM_WAIT_TIMEOUT := 10.0;
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+
+			on Alarm(source=devices[deviceName].deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
+				self.defaultError(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+			}
+		} catch(com.apama.exceptions.Exception e) {
+			log e.toString() at ERROR;
+		}
+
+		return self;
+	}
+
+	action assertEquals(any testVal, any refVal) returns TestValidator {
 		string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
 
 		switch(testVal as castedVal) {
@@ -54,7 +89,7 @@ event TestResults {
 		return self;
 	}
 
-	action finishTest() {}
+	action end() {}
 }
 
 event TestStep {
@@ -62,7 +97,7 @@ event TestStep {
 	string id;
 }
 
-event TestHelper {
+event TestExecuter {
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
 	constant string DEVICE_TYPE := "testDevice";
@@ -86,12 +121,12 @@ event TestHelper {
     //
     // Set up actions
     //
-    action onError(action<string> f) returns TestHelper {
+    action onError(action<string> f) returns TestExecuter {
         self.errFn := f;
         return self;
     }
  
-    action onComplete(action<any> f) returns TestHelper {
+    action onComplete(action<any> f) returns TestExecuter {
         self.completeFn := f;
         return self;
     }
@@ -99,8 +134,10 @@ event TestHelper {
     //
     //operators
     //
-    static action create(string testId) returns TestHelper {
-        TestHelper temp := new TestHelper;
+    static action create(string testId) returns TestExecuter {
+		monitor.subscribe("TEST_CHANNEL");
+
+        TestExecuter temp := new TestExecuter;
         temp.testId := testId;
 		temp.logLevel := "ERROR";
 		temp.enabled := true;
@@ -108,12 +145,12 @@ event TestHelper {
         return temp;
     }
 
-	action enable(boolean enabled) returns TestHelper {
+	action enable(boolean enabled) returns TestExecuter {
         self.enabled := enabled;
         return self;
     }
  
-    action createDevice(string name) returns TestHelper {
+    action createDevice(string name) returns TestExecuter {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -153,7 +190,7 @@ event TestHelper {
 		return self;
     }
  
-	action sendMeasurementOn(string source, float value) returns TestHelper {
+	action sendMeasurementOn(string source, float value) returns TestExecuter {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -183,7 +220,7 @@ event TestHelper {
 		return self;
 	}
 
-	action sendManagedObject(ManagedObject mo) returns TestHelper {
+	action sendManagedObject(ManagedObject mo) returns TestExecuter {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -212,7 +249,7 @@ event TestHelper {
 		return self;
 	}
 
-	action findManagedObject(string type) returns TestHelper {
+	action findManagedObject(string type) returns TestExecuter {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -250,39 +287,14 @@ event TestHelper {
 
 		return self;
 	}
-
-    action assertDeviceCreated(string id) returns TestHelper {
-        return self;
-    }
-
-	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestHelper {
-		if(enabled) {
-			steps := steps + 1;
-			TestStep step := new TestStep;
-			step.id := "assertAlarmNotRaised";
-
-			float ALARM_WAIT_TIMEOUT := 10.0;
-			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
-
-			on DeviceCreated(reqId=self.devices[deviceName].reqId) as device {
-				on Alarm(source=device.deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
-					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
-
-					step.status := "completed";
-					send step to "TEST_CHANNEL";
-				}
-			}
-		}
-
-		return self;
-	}
   
     //
     //utility default actions
     //
-    action finishTest() returns integer{
-		integer reqId := com.apama.cumulocity.Util.generateReqId();
-		TestResults temp := new TestResults;
+    action run() returns TestValidator {
+		integer validateId := com.apama.cumulocity.Util.generateReqId();
+		TestValidator temp := new TestValidator;
+		temp.validateId := validateId;
 
 		on all TestStep(status="success") {
 			finishedSteps := finishedSteps + 1;
@@ -290,14 +302,13 @@ event TestHelper {
 			if(finishedSteps = steps) {
 				temp.devices := self.devices;
 				temp.managedObjects := self.managedObjects;
-				temp.reqId := reqId;
 				temp.testId := testId;
 
 				send temp to "TEST_CHANNEL";
 			}
 		}
 
-		return reqId;
+		return temp;
     }
 
 	action defaultError(string message) {
@@ -323,30 +334,28 @@ monitor asyncTest {
 		float MEASUREMENT_THRESHOLD := 100.0;
 		string ALARM_TYPE := "ThresholdExceededAlarm";
 
-		monitor.subscribe("TEST_CHANNEL");
 		ManagedObject mo := new ManagedObject;
 		mo.type := "testObject";
 		mo.name := "r2d2";
 
 		//Test 1
-		integer reqId := TestHelper
+		TestValidator verify := TestExecuter
 			.create("test1")
 			.enable(true)
 			.createDevice("myDeviceId")
 			.createDevice("myDeviceId2")
-			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD - 10.0)
-			.sendMeasurementOn("myDeviceId2", MEASUREMENT_THRESHOLD + 10.0)
+			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD + 10.0)
+			.sendMeasurementOn("myDeviceId2", MEASUREMENT_THRESHOLD - 10.0)
 			.sendManagedObject(mo)
 			.findManagedObject("testObject")
-			.finishTest();
+			.run();
 		
-		on TestResults(reqId=reqId) as resp {
-			resp
+		on TestValidator(validateId=verify.validateId) as verify {
+			verify
 				.assertAlarmRaised("should raise an alarm", "myDeviceId", ALARM_TYPE)
-				.assertAlarmRaised("should raise an alarm", "myDeviceId2", ALARM_TYPE)
-				.assertEquals(resp.managedObjects[0].name, "c3p0")
-				.finishTest();
+				.assertAlarmNotRaised("should not raise an alarm", "myDeviceId2", ALARM_TYPE)
+				.assertEquals(verify.managedObjects[0].name, "r2d2")
+				.end();
 		}
 	}
-
 }
