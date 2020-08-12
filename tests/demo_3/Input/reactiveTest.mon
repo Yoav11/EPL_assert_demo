@@ -1,3 +1,4 @@
+
 using com.apama.exceptions.Exception;
 
 using com.apama.cumulocity.Measurement;
@@ -13,34 +14,55 @@ event DeviceCreated {
 	integer reqId;
 }
 
+event TestResults {
+	integer reqId;
+	string testId;
+
+	dictionary<string, DeviceCreated> devices;
+	sequence<ManagedObject> managedObjects;
+
+	action defaultError(string message) {
+		log "FAIL - " + self.testId + ": " + message at ERROR;
+	}
+
+	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestResults {
+		try {
+			float ALARM_WAIT_TIMEOUT := 10.0;
+			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+
+			on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=devices[deviceName].deviceId, type=alarmType) {
+				self.defaultError(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
+			}
+		} catch(com.apama.exceptions.Exception e) {
+			log e.toString() at ERROR;
+		}
+
+        return self;
+	}
+
+	action assertEquals(any testVal, any refVal) returns TestResults {
+		string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
+
+		switch(testVal as castedVal) {
+			case string: {
+				if(castedVal != <string>refVal) {
+					self.defaultError(message + " {testVal: " + castedVal +", refVal: " + <string>refVal + "}");
+				}
+			}
+		}
+
+		return self;
+	}
+
+	action finishTest() {}
+}
+
 event TestStep {
 	string status;
 	string id;
 }
 
-event c8yObjectComparator {
-		sequence<com.apama.cumulocity.ManagedObject> mos;
-
-		action compare(sequence<string> args) returns boolean {
-			ManagedObject mo := self.mos[args[1].toInteger()];
-			if(args[2] = "name") {
-				return mo.name = args[args.size()-1];
-			}
-			return true;
-		}
-}
-
-event stringComparator {
-		action compare(sequence<string> args) returns boolean {
-			if(args[0] = args[1]) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-}
-
-event TestExecuter {
+event TestHelper {
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
 	constant string DEVICE_TYPE := "testDevice";
@@ -64,12 +86,12 @@ event TestExecuter {
     //
     // Set up actions
     //
-    action onError(action<string> f) returns TestExecuter {
+    action onError(action<string> f) returns TestHelper {
         self.errFn := f;
         return self;
     }
  
-    action onComplete(action<any> f) returns TestExecuter {
+    action onComplete(action<any> f) returns TestHelper {
         self.completeFn := f;
         return self;
     }
@@ -77,10 +99,8 @@ event TestExecuter {
     //
     //operators
     //
-    static action create(string testId) returns TestExecuter {
-		monitor.subscribe("TEST_CHANNEL");
-
-        TestExecuter temp := new TestExecuter;
+    static action create(string testId) returns TestHelper {
+        TestHelper temp := new TestHelper;
         temp.testId := testId;
 		temp.logLevel := "ERROR";
 		temp.enabled := true;
@@ -88,16 +108,16 @@ event TestExecuter {
         return temp;
     }
 
-	action enable(boolean enabled) returns TestExecuter {
+	action enable(boolean enabled) returns TestHelper {
         self.enabled := enabled;
         return self;
     }
  
-    action createDevice(string name) returns TestExecuter {
+    action createDevice(string name) returns TestHelper {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
-			step.id := "createDevice_" + name;
+			step.id := "createDevice";
 
 			ManagedObject mo := new ManagedObject;
 			mo.type := DEVICE_TYPE;
@@ -133,7 +153,7 @@ event TestExecuter {
 		return self;
     }
  
-	action sendMeasurementOn(string source, float value) returns TestExecuter {
+	action sendMeasurementOn(string source, float value) returns TestHelper {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -163,7 +183,7 @@ event TestExecuter {
 		return self;
 	}
 
-	action sendManagedObject(ManagedObject mo) returns TestExecuter {
+	action sendManagedObject(ManagedObject mo) returns TestHelper {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -192,7 +212,7 @@ event TestExecuter {
 		return self;
 	}
 
-	action findManagedObject(dictionary<string, string> query) returns TestExecuter {
+	action findManagedObject(string type) returns TestHelper {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -202,37 +222,8 @@ event TestExecuter {
 
 			com.apama.cumulocity.FindManagedObject request := new com.apama.cumulocity.FindManagedObject;
 			request.reqId := reqId;
-			
-			if(query.hasKey("deviceId")) {
-				request.deviceId := query["deviceId"];
-			}
-			if(query.hasKey("type")) {
-				request.params.add("type", query["type"]);
-			}
-			if(query.hasKey("fragmentType")) {
-				request.params.add("fragmentType", query["fragmentType"]);
-			}
-			if(query.hasKey("owner")) {
-				request.params.add("owner", query["owner"]);
-			}
-			if(query.hasKey("text")) {
-				request.params.add("text", query["text"]);
-			}
-			if(query.hasKey("childAssetId")) {
-				request.params.add("childAssetId", query["childAssetId"]);
-			}
-			if(query.hasKey("childDeviceId")) {
-				request.params.add("childDeviceId", query["childDeviceId"]);
-			}
-			if(query.hasKey("ids")) {
-				request.params.add("ids", query["ids"]);
-			}
-			if(query.hasKey("pageSize")) {
-				request.params.add("pageSize", query["pageSize"]);
-			}
-			if(query.hasKey("currentPage")) {
-				request.params.add("currentPage", query["currentPage"]);
-			}
+
+			request.params.add("type", type);
 
 			monitor.subscribe(com.apama.cumulocity.FindManagedObjectResponse.SUBSCRIBE_CHANNEL);
 
@@ -260,85 +251,53 @@ event TestExecuter {
 		return self;
 	}
 
-	action assertAlarmRaised(string message, string deviceName, string alarmType) returns TestExecuter {
-		try {
-			float ALARM_WAIT_TIMEOUT := 10.0;
-			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
-
-			on TestStep(id="createDevice_" + deviceName) {
-				on wait(ALARM_WAIT_TIMEOUT) and not Alarm(source=devices[deviceName].deviceId, type=alarmType) {
-					self.defaultError(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
-				}
-			}
-
-		} catch(com.apama.exceptions.Exception e) {
-			log e.toString() at ERROR;
-		}
-
+    action assertDeviceCreated(string id) returns TestHelper {
         return self;
-	}
+    }
 
-	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestExecuter {
-		try {
+	action assertAlarmNotRaised(string message, string deviceName, string alarmType) returns TestHelper {
+		if(enabled) {
+			steps := steps + 1;
+			TestStep step := new TestStep;
+			step.id := "assertAlarmNotRaised";
+
 			float ALARM_WAIT_TIMEOUT := 10.0;
 			monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
 
-			on Alarm(source=devices[deviceName].deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
-				self.defaultError(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
-			}
-		} catch(com.apama.exceptions.Exception e) {
-			log e.toString() at ERROR;
-		}
+			on DeviceCreated(reqId=self.devices[deviceName].reqId) as device {
+				on Alarm(source=device.deviceId, type=alarmType) and not wait(ALARM_WAIT_TIMEOUT) {
+					self.errFn(message + " {deviceName: " + deviceName +", alarmType: " + alarmType + "}");
 
-		return self;
-	}
-
-	action assertEquals(any testVal, any refVal) returns TestExecuter {
-		string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
-
-		switch(testVal as castedVal) {
-			case string: {
-				if(castedVal != <string>refVal) {
-					self.defaultError(message + " {testVal: " + castedVal +", refVal: " + <string>refVal + "}");
+					step.status := "completed";
+					send step to "TEST_CHANNEL";
 				}
 			}
 		}
 
 		return self;
 	}
-
-	action assertFn(string message, any comparator, sequence<string> args) returns TestExecuter {
-			if(args[0] = "managedObjects") {
-				on TestStep(id="findManagedObject") {
-					try {
-						comparator.setField("mos", self.managedObjects);
-						action<sequence<string>> returns boolean compare := <action<sequence<string>> returns boolean> comparator.getAction("compare");
-
-						if(compare(args) = false) {
-							self.defaultError(message + " {comparator: " + "-" +", args: " + args.toString() + "}");
-						}
-
-					} catch(Exception e) {
-						log e.toString() at ERROR;
-					}
-				}
-			} else {
-				action<sequence<string>> returns boolean compare := <action<sequence<string>> returns boolean> comparator.getAction("compare");
-
-				if(compare(args) = false) {
-					self.defaultError(message + " {comparator: " + "-" +", args: " + args.toString() + "}");
-				}
-			}
-
-		return self;
-	}
-
   
     //
     //utility default actions
     //
-    action run() {
+    action finishTest() returns integer{
+		integer reqId := com.apama.cumulocity.Util.generateReqId();
+		TestResults temp := new TestResults;
 
+		on all TestStep(status="success") {
+			finishedSteps := finishedSteps + 1;
+
+			if(finishedSteps = steps) {
+				temp.devices := self.devices;
+				temp.managedObjects := self.managedObjects;
+				temp.reqId := reqId;
+				temp.testId := testId;
+
+				send temp to "TEST_CHANNEL";
+			}
+		}
+
+		return reqId;
     }
 
 	action defaultError(string message) {
@@ -359,37 +318,35 @@ event TestExecuter {
 //
 // ----------------------------------------------------------
  
-//  action managedObjectComparator(TestValidator valid, any args)
-//  event AssertFn { ... action eval(..) {}}
-//  static action create(...) returns action<TestValidator> returns boolean { return _assertFn(args).eval; }
-
 monitor asyncTest {
 	action onload() {
 		float MEASUREMENT_THRESHOLD := 100.0;
+		string ALARM_TYPE := "ThresholdExceededAlarm";
 
+		monitor.subscribe("TEST_CHANNEL");
 		ManagedObject mo := new ManagedObject;
 		mo.type := "testObject";
 		mo.name := "r2d2";
-				
+
 		//Test 1
-		TestExecuter
+		integer reqId := TestHelper
 			.create("test1")
 			.enable(true)
-
 			.createDevice("myDeviceId")
-			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD - 10.0)
-			.assertAlarmNotRaised("should not raise an alarm", "myDeviceId", "ThresholdExceededAlarm")
-
 			.createDevice("myDeviceId2")
+			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD - 10.0)
 			.sendMeasurementOn("myDeviceId2", MEASUREMENT_THRESHOLD + 10.0)
-			.assertAlarmRaised("should raise an alarm", "myDeviceId2", "ThresholdExceededAlarm")
-
 			.sendManagedObject(mo)
-			.findManagedObject({"type": "testObject"})
-			.assertFn("object name should be equal", new c8yObjectComparator, ["managedObjects", "0", "name", "c2po"])
-
-			.assertFn("strings should be equal", new stringComparator, ["hello", "helllo"])
-
-			.run();
+			.findManagedObject("testObject")
+			.finishTest();
+		
+		on TestResults(reqId=reqId) as resp {
+			resp
+				.assertAlarmRaised("should raise an alarm", "myDeviceId", ALARM_TYPE)
+				.assertAlarmRaised("should raise an alarm", "myDeviceId2", ALARM_TYPE)
+				.assertEquals(resp.managedObjects[0].name, "c3p0")
+				.finishTest();
+		}
 	}
+
 }
