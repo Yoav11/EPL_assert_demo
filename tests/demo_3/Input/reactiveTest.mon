@@ -296,7 +296,7 @@ event TestExecuter {
 		TestValidator temp := new TestValidator;
 		temp.validateId := validateId;
 
-		on all TestStep(status="success") {
+		on all TestStep(status="success") and not TestValidator(validateId=validateId) {
 			finishedSteps := finishedSteps + 1;
 
 			if(finishedSteps = steps) {
