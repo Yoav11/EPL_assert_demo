@@ -1,70 +1,88 @@
-2020-08-06 10:40:30.844 ##### [25396] - Correlator, version 10.5.3.1.375146 (build rel/10.5.3.x@375146 on amd64-win using Software AG suite version 10.5), started.
-2020-08-06 10:40:30.846 ##### [25396] - Running on host 'SAG-6CWHMC2.eur.ad.sag' as user 'yni'.
-2020-08-06 10:40:30.847 ##### [25396] - Running on platform 'Windows 10 Enterprise'.
-2020-08-06 10:40:30.847 ##### [25396] - Running on CPU 'GenuineIntel family 6 model 14 stepping 3 Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz'.
-2020-08-06 10:40:30.847 ##### [25396] - Running with process Id 24824.
-2020-08-06 10:40:30.847 ##### [25396] - Running with 16279.59MB of available memory.
-2020-08-06 10:40:30.847 ##### [25396] - There are 4 CPU(s)
-2020-08-06 10:40:30.847 ##### [25396] - Correlator command line: C:\SoftwareAG\Apama\bin\correlator --name correlator -p 16935 -f correlator.log
-2020-08-06 10:40:30.847 ##### [25396] - Current Working Directory: C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Output\win32
-2020-08-06 10:40:30.847 ##### [25396] - PATH: C:\SoftwareAG\Apama\third_party\python;C:\Users\Public\SoftwareAG\ApamaWork_10.5\lib;C:\SoftwareAG\Apama\bin;C:\SoftwareAG\Apama\adapters\bin;C:\SoftwareAG\Apama\..\common\security\openssl\bin;C:\SoftwareAG\jvm\jvm\jre\bin\server;C:\SoftwareAG\jvm\jvm\jre\bin;C:\SoftwareAG\Apama\..\common\lib\ant\bin;C:\SoftwareAG\jvm\jvm\jre\..\bin;C:\SoftwareAG\Apama\..\UniversalMessaging\cplus\lib\x86_64;C:\SoftwareAG\Apama\third_party\python;C:\SoftwareAG\Apama\third_party\python\Scripts;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Users\yni\AppData\Local\Microsoft\WindowsApps;C:\Users\yni\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yni\AppData\Local\Programs\Git\cmd;C:\SoftwareAG\Apama\third_party\python\lib\site-packages\pywin32_system32
-2020-08-06 10:40:30.847 ##### [25396] - Current UTC time: 2020-08-06 09:40:30, local timezone: GMT Daylight Time
-2020-08-06 10:40:30.847 ##### [25396] - Input value - port                     = 16935
-2020-08-06 10:40:30.847 ##### [25396] - Input value - output queue size        = 10000
-2020-08-06 10:40:30.847 ##### [25396] - Input value - output queue batch size  = 100
-2020-08-06 10:40:30.847 ##### [25396] - Input value - output queue mode        = blocking
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_COMMON_JRE=C:\SoftwareAG\jvm\jvm\jre
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_CORRELATOR_HOME=C:\SoftwareAG\Apama
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_DASHBOARD_HOME=C:\SoftwareAG\Apama
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_DEV_HOME=C:\SoftwareAG\Apama
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_ENVSET=10.5:C:\SoftwareAG\Apama:amd64-win
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_HOME=C:\SoftwareAG\Apama
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_JRE=C:\SoftwareAG\jvm\jvm\jre
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_LIBRARY_VERSION=10.5
-2020-08-06 10:40:30.847 ##### [25396] - Input value - environment variable     = APAMA_MANAGEMENT_HOME=C:\SoftwareAG\Apama
-2020-08-06 10:40:30.848 ##### [25396] - Input value - environment variable     = APAMA_PLATFORM=amd64-win
-2020-08-06 10:40:30.848 ##### [25396] - Input value - environment variable     = APAMA_WORK=C:\Users\Public\SoftwareAG\ApamaWork_10.5
-2020-08-06 10:40:30.848 ##### [25396] - Input value - environment variable     = SSL_CERT_FILE=C:\SoftwareAG\Apama\..\common\security\openssl\cert.pem
-2020-08-06 10:40:30.848 ##### [25396] - Using memory allocator                 = TBB scalable allocator
-2020-08-06 10:40:30.848 CRIT  [25396] - *************************************************************************
-2020-08-06 10:40:30.848 CRIT  [25396] - * License file not present at C:\Users\Public\SoftwareAG\ApamaWork_10.5/license/ApamaServerLicense.xml
-2020-08-06 10:40:30.848 CRIT  [25396] - * Without a license file the correlator has the following restrictions: 
-2020-08-06 10:40:30.848 CRIT  [25396] - * 1024MB memory, 4 threads, 5 persistent EPL monitors, 20 contexts, 
-2020-08-06 10:40:30.848 CRIT  [25396] - * 5 query definitions with 5 instances of each, 50 query partitions, non-reliable JMS
-2020-08-06 10:40:30.848 CRIT  [25396] - * connections only, and no Correlator Deployment Packages.
-2020-08-06 10:40:30.848 CRIT  [25396] - * Refer to the Apama license agreement and user documentation topic "Running Apama without
-2020-08-06 10:40:30.848 CRIT  [25396] - * a license file" for further information on the restrictions. 
-2020-08-06 10:40:30.848 CRIT  [25396] - * The correlator may stop without warning if the memory limit is breached.
-2020-08-06 10:40:30.848 CRIT  [25396] - * If using Java features, you may need to use -J-Xmx256M to limit the JVM's memory usage.
-2020-08-06 10:40:30.848 CRIT  [25396] - *************************************************************************
-2020-08-06 10:40:30.848 CRIT  [25396] - 
-2020-08-06 10:40:30.858 ##### [25396] - Correlator is restricted to 1024.0 MB of resident memory
-2020-08-06 10:40:30.858 ##### [25396] - Input value - pidfile                  = 
-2020-08-06 10:40:30.858 ##### [25396] - Input value - per receiver queue size  = 10 s
-2020-08-06 10:40:30.858 ##### [25396] - Input value - per receiver queue size  = 10240 kb
-2020-08-06 10:40:30.858 ##### [25396] - Input value - input queue size         = 20000
-2020-08-06 10:40:30.858 ##### [25396] - External clocking                      = disabled
-2020-08-06 10:40:30.858 ##### [25396] - Input value - logfile                  = correlator.log
-2020-08-06 10:40:30.858 ##### [25396] - Input value - loglevel                 = INFO
-2020-08-06 10:40:30.858 ##### [25396] - Input value - inputLog                 = ** Warning input log not enabled **
-2020-08-06 10:40:30.858 ##### [25396] - Compiler optimizations                 = enabled - the debugger cannot be used; specify command line option "-g" to use it.
-2020-08-06 10:40:30.858 ##### [25396] - Using EPL runtime                      = interpreted
-2020-08-06 10:40:30.860 ##### [25396] - Python support                         = automatic
-2020-08-06 10:40:30.867 ##### [25396] - Java support                           = disabled
-2020-08-06 10:40:30.867 ##### [25396] - Input value - persistence              = disabled
-2020-08-06 10:40:30.876 INFO  [25396] - Will log queue size every 5.000000 seconds
-2020-08-06 10:40:30.876 INFO  [25396] - Starting scheduler with 4 threads (determined from hardware)
-2020-08-06 10:40:30.878 INFO  [25396] - Server socket opened listening on 0.0.0.0:16935
-2020-08-06 10:40:30.879 ##### [25396] - Component ID: correlator (correlator/6857803617776746491/6857803617776746491)
-2020-08-06 10:40:30.879 ##### [25396] - Correlator, version 10.5.3.1.375146, running
-2020-08-06 10:40:31.423 INFO  [4864] - Sender engine_inject (yni) (00000132A904DFA0) (component ID 6857803621732761595/6857522146756050939) connected from 127.0.0.1:51284
-2020-08-06 10:40:31.442 INFO  [12496] - Added type com.apamax.test.Assert
-2020-08-06 10:40:31.442 INFO  [12496] - Injected MonitorScript from file C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Input\../../../Asserts.mon (f9abcd9796e8dc3c440dcfedb9a37c8c), size 10491 bytes, compile time 0.02 seconds
-2020-08-06 10:40:31.444 INFO  [24392] - Sender engine_inject (yni) (00000132A904DFA0) (component ID 6857803621732761595/6857522146756050939) disconnected cleanly: Other party requested disconnection
-2020-08-06 10:40:31.522 INFO  [4864] - Sender engine_inject (yni) (00000132A9041680) (component ID 6857803622010634235/6857522147033923579) connected from 127.0.0.1:51287
-2020-08-06 10:40:31.527 WARN  [19072] - Error injecting monitorscript from file C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Input\test.mon: Error on line 30: trying to initialise an item of a dictionary<string,boolean> with a string expression (error reported to client)
-2020-08-06 10:40:31.527 INFO  [19072] - Removed monitor AssertTest
-2020-08-06 10:40:31.527 INFO  [19072] - Removed type device
-2020-08-06 10:40:31.529 INFO  [24392] - Sender engine_inject (yni) (00000132A9041680) (component ID 6857803622010634235/6857522147033923579) disconnected cleanly: Other party requested disconnection
-2020-08-06 10:40:31.623 ##### [19072] - Shutting down correlator in response to client (127.0.0.1:51289) request: Shutdown requested by test
-2020-08-06 10:40:31.704 INFO  [25396] - Correlator shutdown is complete
+2020-08-12 14:50:38.402 ##### [19500] - Correlator, version 10.5.3.1.375146 (build rel/10.5.3.x@375146 on amd64-win using Software AG suite version 10.5), started.
+2020-08-12 14:50:38.403 ##### [19500] - Running on host 'SAG-6CWHMC2.eur.ad.sag' as user 'yni'.
+2020-08-12 14:50:38.404 ##### [19500] - Running on platform 'Windows 10 Enterprise'.
+2020-08-12 14:50:38.404 ##### [19500] - Running on CPU 'GenuineIntel family 6 model 14 stepping 3 Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz'.
+2020-08-12 14:50:38.404 ##### [19500] - Running with process Id 5840.
+2020-08-12 14:50:38.404 ##### [19500] - Running with 16279.59MB of available memory.
+2020-08-12 14:50:38.404 ##### [19500] - There are 4 CPU(s)
+2020-08-12 14:50:38.404 ##### [19500] - Correlator command line: C:\SoftwareAG\Apama\bin\correlator --name correlator -p 41534 -f correlator.log
+2020-08-12 14:50:38.404 ##### [19500] - Current Working Directory: C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Output\win32
+2020-08-12 14:50:38.404 ##### [19500] - PATH: C:\SoftwareAG\Apama\third_party\python;C:\Users\Public\SoftwareAG\ApamaWork_10.5\lib;C:\SoftwareAG\Apama\bin;C:\SoftwareAG\Apama\adapters\bin;C:\SoftwareAG\Apama\..\common\security\openssl\bin;C:\SoftwareAG\jvm\jvm\jre\bin\server;C:\SoftwareAG\jvm\jvm\jre\bin;C:\SoftwareAG\Apama\..\common\lib\ant\bin;C:\SoftwareAG\jvm\jvm\jre\..\bin;C:\SoftwareAG\Apama\..\UniversalMessaging\cplus\lib\x86_64;C:\SoftwareAG\Apama\third_party\python;C:\SoftwareAG\Apama\third_party\python\Scripts;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Users\yni\AppData\Local\Microsoft\WindowsApps;C:\Users\yni\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\yni\AppData\Local\Programs\Git\cmd;C:\SoftwareAG\Apama\third_party\python\lib\site-packages\pywin32_system32
+2020-08-12 14:50:38.404 ##### [19500] - Current UTC time: 2020-08-12 13:50:38, local timezone: GMT Daylight Time
+2020-08-12 14:50:38.404 ##### [19500] - Input value - port                     = 41534
+2020-08-12 14:50:38.404 ##### [19500] - Input value - output queue size        = 10000
+2020-08-12 14:50:38.404 ##### [19500] - Input value - output queue batch size  = 100
+2020-08-12 14:50:38.404 ##### [19500] - Input value - output queue mode        = blocking
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_COMMON_JRE=C:\SoftwareAG\jvm\jvm\jre
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_CORRELATOR_HOME=C:\SoftwareAG\Apama
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_DASHBOARD_HOME=C:\SoftwareAG\Apama
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_DEV_HOME=C:\SoftwareAG\Apama
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_ENVSET=10.5:C:\SoftwareAG\Apama:amd64-win
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_HOME=C:\SoftwareAG\Apama
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_JRE=C:\SoftwareAG\jvm\jvm\jre
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_LIBRARY_VERSION=10.5
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_MANAGEMENT_HOME=C:\SoftwareAG\Apama
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_PLATFORM=amd64-win
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = APAMA_WORK=C:\Users\Public\SoftwareAG\ApamaWork_10.5
+2020-08-12 14:50:38.404 ##### [19500] - Input value - environment variable     = SSL_CERT_FILE=C:\SoftwareAG\Apama\..\common\security\openssl\cert.pem
+2020-08-12 14:50:38.404 ##### [19500] - Using memory allocator                 = TBB scalable allocator
+2020-08-12 14:50:38.405 CRIT  [19500] - *************************************************************************
+2020-08-12 14:50:38.405 CRIT  [19500] - * License file not present at C:\Users\Public\SoftwareAG\ApamaWork_10.5/license/ApamaServerLicense.xml
+2020-08-12 14:50:38.405 CRIT  [19500] - * Without a license file the correlator has the following restrictions: 
+2020-08-12 14:50:38.405 CRIT  [19500] - * 1024MB memory, 4 threads, 5 persistent EPL monitors, 20 contexts, 
+2020-08-12 14:50:38.405 CRIT  [19500] - * 5 query definitions with 5 instances of each, 50 query partitions, non-reliable JMS
+2020-08-12 14:50:38.405 CRIT  [19500] - * connections only, and no Correlator Deployment Packages.
+2020-08-12 14:50:38.405 CRIT  [19500] - * Refer to the Apama license agreement and user documentation topic "Running Apama without
+2020-08-12 14:50:38.405 CRIT  [19500] - * a license file" for further information on the restrictions. 
+2020-08-12 14:50:38.405 CRIT  [19500] - * The correlator may stop without warning if the memory limit is breached.
+2020-08-12 14:50:38.405 CRIT  [19500] - * If using Java features, you may need to use -J-Xmx256M to limit the JVM's memory usage.
+2020-08-12 14:50:38.405 CRIT  [19500] - *************************************************************************
+2020-08-12 14:50:38.405 CRIT  [19500] - 
+2020-08-12 14:50:38.416 ##### [19500] - Correlator is restricted to 1024.0 MB of resident memory
+2020-08-12 14:50:38.416 ##### [19500] - Input value - pidfile                  = 
+2020-08-12 14:50:38.416 ##### [19500] - Input value - per receiver queue size  = 10 s
+2020-08-12 14:50:38.416 ##### [19500] - Input value - per receiver queue size  = 10240 kb
+2020-08-12 14:50:38.416 ##### [19500] - Input value - input queue size         = 20000
+2020-08-12 14:50:38.416 ##### [19500] - External clocking                      = disabled
+2020-08-12 14:50:38.416 ##### [19500] - Input value - logfile                  = correlator.log
+2020-08-12 14:50:38.416 ##### [19500] - Input value - loglevel                 = INFO
+2020-08-12 14:50:38.416 ##### [19500] - Input value - inputLog                 = ** Warning input log not enabled **
+2020-08-12 14:50:38.416 ##### [19500] - Compiler optimizations                 = enabled - the debugger cannot be used; specify command line option "-g" to use it.
+2020-08-12 14:50:38.416 ##### [19500] - Using EPL runtime                      = interpreted
+2020-08-12 14:50:38.417 ##### [19500] - Python support                         = automatic
+2020-08-12 14:50:38.421 ##### [19500] - Java support                           = disabled
+2020-08-12 14:50:38.421 ##### [19500] - Input value - persistence              = disabled
+2020-08-12 14:50:38.429 INFO  [19500] - Will log queue size every 5.000000 seconds
+2020-08-12 14:50:38.430 INFO  [19500] - Starting scheduler with 4 threads (determined from hardware)
+2020-08-12 14:50:38.435 INFO  [19500] - Server socket opened listening on 0.0.0.0:41534
+2020-08-12 14:50:38.435 ##### [19500] - Component ID: correlator (correlator/6860094586448013821/6860094586448013821)
+2020-08-12 14:50:38.435 ##### [19500] - Correlator, version 10.5.3.1.375146, running
+2020-08-12 14:50:39.009 INFO  [19980] - Sender engine_inject (yni) (0000027899E98C70) (component ID 6860094587006904829/6859813116325161469) connected from 127.0.0.1:62319
+2020-08-12 14:50:39.020 INFO  [19968] - Added type com.apamax.test.Assert
+2020-08-12 14:50:39.020 INFO  [19968] - Injected MonitorScript from file C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Input\../../../Asserts.mon (f9abcd9796e8dc3c440dcfedb9a37c8c), size 10491 bytes, compile time 0.01 seconds
+2020-08-12 14:50:39.022 INFO  [5068] - Sender engine_inject (yni) (0000027899E98C70) (component ID 6860094587006904829/6859813116325161469) disconnected cleanly: Other party requested disconnection
+2020-08-12 14:50:39.115 INFO  [19980] - Sender engine_inject (yni) (000002789E0BC870) (component ID 6860094591484324349/6859813116507613693) connected from 127.0.0.1:62322
+2020-08-12 14:50:39.121 INFO  [21564] - Added monitor AssertTest
+2020-08-12 14:50:39.121 INFO  [21564] - Added type device
+2020-08-12 14:50:39.121 INFO  [21564] - Injected MonitorScript from file C:\Users\yni\Documents\internship\EPL_assert_demo\tests\demo_1\Input\test.mon (3c275dff6befbc859dac1978d89efe84), size 2365 bytes, compile time 0.00 seconds
+2020-08-12 14:50:39.122 INFO  [5068] - Sender engine_inject (yni) (000002789E0BC870) (component ID 6860094591484324349/6859813116507613693) disconnected cleanly: Other party requested disconnection
+2020-08-12 14:50:39.122 ERROR [15616] - AssertTest [1] FAILED sensors should be the same: assertEquals - assert actual = expected
+actual: device("CZ-3","droid","127.2.0.1")
+expected: device("CZ-3","droid","127.0.0.1")
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED log messages should be the same : assertEquals - assert actual = expected
+actual: Executed engine_inject <correlator> [test.mon]
+expected: Executed engine_deploy <correlator> [test.mon]
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED intNotEqualsTest: 1 = 1 when expecting values to not equal
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED outOfRangeTest: 6 is not in the range 1-5
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED twoPlusTwoIsFive: expression is false when expecting true
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED twoPlusTwoIsNotFive: expression is true when expecting false
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED greaterThanIntTest: 1 <= 4
+2020-08-12 14:50:39.123 ERROR [15616] - AssertTest [1] FAILED lesserThanFloatTest: -.19 >= -.2
+2020-08-12 14:50:39.124 ERROR [15616] - AssertTest [1] FAILED throwTest2: function did not throw error when expecting to
+2020-08-12 14:50:39.124 ERROR [15616] - AssertTest [1] FAILED noThrowTest2: function threw error when not expected to: com.apama.exceptions.Exception("Argument is not 1","IllegalArgumentException")
+2020-08-12 14:50:39.125 ERROR [15616] - AssertTest [1] FAILED specificThrowTest2: function threw IllegalArgumentException when expecting a ArithmeticException exception
+2020-08-12 14:50:39.125 ERROR [15616] - AssertTest [1] FAILED containsTest1: any(device,device("CZ-3","droid","127.0.0.1")) does not contain field id
+2020-08-12 14:50:39.125 INFO  [15616] - Removed monitor AssertTest
+2020-08-12 14:50:39.168 INFO  [21564] - Request <flushAllQueues > received Source:127.0.0.1
+2020-08-12 14:50:39.226 ##### [15836] - Shutting down correlator in response to client (127.0.0.1:62325) request: Shutdown requested by test
+2020-08-12 14:50:39.314 INFO  [19500] - Correlator shutdown is complete

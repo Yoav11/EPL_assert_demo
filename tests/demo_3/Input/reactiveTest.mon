@@ -249,7 +249,7 @@ event TestExecuter {
 		return self;
 	}
 
-	action findManagedObject(string type) returns TestExecuter {
+	action findManagedObject(dictionary<string, string> query) returns TestExecuter {
 		if(enabled) {
 			steps := steps + 1;
 			TestStep step := new TestStep;
@@ -259,8 +259,37 @@ event TestExecuter {
 
 			com.apama.cumulocity.FindManagedObject request := new com.apama.cumulocity.FindManagedObject;
 			request.reqId := reqId;
-
-			request.params.add("type", type);
+			
+			if(query.hasKey("deviceId")) {
+				request.deviceId := query["deviceId"];
+			}
+			if(query.hasKey("type")) {
+				request.params.add("type", query["type"]);
+			}
+			if(query.hasKey("fragmentType")) {
+				request.params.add("fragmentType", query["fragmentType"]);
+			}
+			if(query.hasKey("owner")) {
+				request.params.add("owner", query["owner"]);
+			}
+			if(query.hasKey("text")) {
+				request.params.add("text", query["text"]);
+			}
+			if(query.hasKey("childAssetId")) {
+				request.params.add("childAssetId", query["childAssetId"]);
+			}
+			if(query.hasKey("childDeviceId")) {
+				request.params.add("childDeviceId", query["childDeviceId"]);
+			}
+			if(query.hasKey("ids")) {
+				request.params.add("ids", query["ids"]);
+			}
+			if(query.hasKey("pageSize")) {
+				request.params.add("pageSize", query["pageSize"]);
+			}
+			if(query.hasKey("currentPage")) {
+				request.params.add("currentPage", query["currentPage"]);
+			}
 
 			monitor.subscribe(com.apama.cumulocity.FindManagedObjectResponse.SUBSCRIBE_CHANNEL);
 
@@ -347,7 +376,7 @@ monitor asyncTest {
 			.sendMeasurementOn("myDeviceId", MEASUREMENT_THRESHOLD + 10.0)
 			.sendMeasurementOn("myDeviceId2", MEASUREMENT_THRESHOLD - 10.0)
 			.sendManagedObject(mo)
-			.findManagedObject("testObject")
+			.findManagedObject({"type": "testObject"})
 			.run();
 		
 		on TestValidator(validateId=verify.validateId) as verify {
@@ -359,3 +388,6 @@ monitor asyncTest {
 		}
 	}
 }
+
+
+

@@ -25,10 +25,7 @@ monitor AssertTest {
 			"logLevel": "ERROR"
 		};
 
-		Assert asserter := Assert.createCustom({
-			"isEnabled": true,
-			"logLevel": "ERROR"
-		});
+		Assert asserter := Assert.createCustom(options);
 
 		device device1 := device.create("CZ-3", "droid", "127.0.0.1");
 		device device2 := device.create("CZ-3", "droid", "127.2.0.1");
