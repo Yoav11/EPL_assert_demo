@@ -77,7 +77,7 @@
 <br>Asserts that an event contains a specific field</TD>
 </TR>
 <TR BGCOLOR="white" CLASS="TableRowColor">
-<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1"><CODE>&nbsp;void</CODE></FONT></TD><TD><CODE></CODE><CODE><B><A HREF="Assert.html#assertEquals()">assertEquals</A></B>(string&nbsp;testName,&nbsp;any&nbsp;testVal,&nbsp;any&nbsp;refVal)</CODE>
+<TD ALIGN="right" VALIGN="top" WIDTH="1%"><FONT SIZE="-1"><CODE>&nbsp;void</CODE></FONT></TD><TD><CODE></CODE><CODE><B><A HREF="Assert.html#assertEquals()">assertEquals</A></B>(string&nbsp;testName,&nbsp;any&nbsp;actual,&nbsp;any&nbsp;expected)</CODE>
 <br>
 <br>Asserts that two values are equal. Uses different handling depending on type:</TD>
 </TR>
@@ -188,7 +188,7 @@
 <HR>
 <A NAME="assertEquals()"></A>
 <H3>assertEquals</H3>
-<PRE>void&nbsp;<B>assertEquals</B>(string&nbsp;testName,&nbsp;any&nbsp;testVal,&nbsp;any&nbsp;refVal)</PRE>Asserts that two values are equal. Uses different handling depending on type:<br>
+<PRE>void&nbsp;<B>assertEquals</B>(string&nbsp;testName,&nbsp;any&nbsp;actual,&nbsp;any&nbsp;expected)</PRE>Asserts that two values are equal. Uses different handling depending on type:<br>
 <br> Integer, string, boolean - uses the '=' operator.<br>
 <br> float - checks equality within a tolerance of 0.0001.<br>
 <br> others - uses the any .getFields() method as a comparator.<DL>
@@ -198,9 +198,11 @@
 <DD>
 <tt>testName</tt>&nbsp;-&nbsp;name of test being asserted.</DD>
 <DD>
-<tt>testVal</tt>&nbsp;-&nbsp;value to test.</DD>
+<tt>actual</tt>
+</DD>
 <DD>
-<tt>refVal</tt>&nbsp;-&nbsp;value to compare testVal to.</DD>
+<tt>expected</tt>
+</DD>
 </DL>
 <HR>
 <A NAME="assertFalse()"></A>

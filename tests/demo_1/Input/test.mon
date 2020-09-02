@@ -33,20 +33,15 @@ monitor AssertTest {
 		asserter.assertEquals("sensors should be the same", device2, device1);
 		asserter.assertEquals("log messages should be the same ", "Executed engine_inject <correlator> [test.mon]", "Executed engine_deploy <correlator> [test.mon]");
 
-		asserter.assertNotEquals("floatNotEqualsTest", 3.56, 3.57);
-		asserter.assertNotEquals("intNotEqualsTest", 1, 1);
+		asserter.assertNotEquals("floats should not be the same", 3.56, 3.57);
 
-		asserter.assertInRange("inRangeTest", 3, 2, 4);
-		asserter.assertInRange("outOfRangeTest", 6, 1, 5);
+		asserter.assertInRange("value falls in the range", 3, 2, 4);
 
-		asserter.assertTrue("twoPlusTwoIsFour", (2+2)=4);
-		asserter.assertTrue("twoPlusTwoIsFive", (2+2)=5);
+		asserter.assertTrue("two plus two is four", (2+2)=4);
 
-		asserter.assertFalse("twoPlusTwoIsNotFive", (2+2)=5);
-		asserter.assertFalse("twoPlusTwoIsNotFour", (2+2)=4);
+		asserter.assertGreaterThan("four is greater than one", 1, 4);
 
-		asserter.assertGreaterThan("greaterThanStringTest", "b", "a");
-		asserter.assertGreaterThan("greaterThanIntTest", 1, 4);
+
 
 		asserter.assertLesserThan("lesserThanStringTest", "Hello", "Helloo");
 		asserter.assertLesserThan("lesserThanFloatTest", -0.19, -0.20);
