@@ -18,9 +18,6 @@ event ValidatorLoaded {
 	string status;
 }
 
-/**
- * An event type to run assertions on cumulocity data
- */
 event TestValidator {
 	integer validateId;
 	string testId;
