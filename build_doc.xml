@@ -6,6 +6,7 @@
     <generate-apamadoc outputDir="./docs" title="">
       <fileset dir="./">
          <include name="**/Asserts.mon"/>
+         <include name="**/reactiveTest.mon"/>
       </fileset>
     </generate-apamadoc>
   </target>

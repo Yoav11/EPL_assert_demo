@@ -18,8 +18,11 @@
 <NOSCRIPT></NOSCRIPT>
 </HEAD>
 <FRAMESET cols="20%,80%" title="" onLoad="top.loadFrames()">
-<FRAME src="alltypes-frame.html" name="packageFrame" title="All monitors, aggregate and events">
-<FRAME name="typeFrame" title="Package, monitor and event descriptions" scrolling="yes" src="com/apamax/test/package-summary.html">
+<FRAMESET rows="30%,70%" title="" onLoad="top.loadFrames()">
+<FRAME src="overview-frame.html" name="packageListFrame" title="All Packages">
+<FRAME src="alltypes-frame.html" name="packageFrame" title="All monitors, aggregates and events">
+</FRAMESET>
+<FRAME src="overview-summary.html" name="typeFrame" title="Package, monitor, aggregate and event descriptions" scrolling="yes">
 <NOFRAMES>
 <H2>
               Frame Alert
@@ -28,9 +31,7 @@
           This document is designed to be viewed using the frames feature. If you see this message, you are using a non-frame-capable web client.
           <BR>
           Link to
-          <A>
-              Non-frame version.
-               HREF="com/apamax/test/package-summary.html"</A>
+          <A HREF="overview-summary.html">Non-frame version.</A>
 </P>
 </NOFRAMES>
 </FRAMESET>
