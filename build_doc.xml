@@ -5,7 +5,7 @@
   <target name="apamadoc">
     <generate-apamadoc outputDir="./docs" title="">
       <fileset dir="./">
-         <include name="**/*.mon"/>
+         <include name="**/Asserts.mon"/>
       </fileset>
     </generate-apamadoc>
   </target>

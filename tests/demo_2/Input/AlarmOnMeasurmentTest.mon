@@ -6,16 +6,10 @@ using com.apama.cumulocity.ObjectCommitFailed;
 using com.apama.cumulocity.Util;
 using com.apama.cumulocity.Alarm;
 
-/**
- * An assertion class for testing epl applications
- */
 event Assert {
 	boolean isEnabled;
 	string logLevel;
 
-	/** Creates an instance of the Assert event to run assertions from.
-	 * this will set private variables logLevel to "ERROR" and isEnabled to true
-	 */
 	static action create() returns Assert {
 		Assert temp := new Assert;
 
@@ -25,11 +19,6 @@ event Assert {
 		return temp;
 	}
 
-	/** Creates an instance of the Assert event to run assertions from.
-	 * @param options dictionary<string, any>, options include:
-	 *	<boolean>isEnabled - set to true to enable logging
-	 *	<string>logLevel - either "ERROR" or "DEBUG" sets logging level.
-	 */
 	static action createCustom(dictionary<string, any> options) returns Assert {
 		Assert temp := new Assert;
 
@@ -48,11 +37,6 @@ event Assert {
 		return temp;
 	}
 
-    /** Logs an assertion failure when test does not pass.
-	 * @param pass set to true if a test passes, false if it fails.
-	 * @param testName name of test being asserted.
-     * @param message custom message with information about test failure.
-	 */
 	action assertBase(boolean pass, string testName, string message) {
 		if (not pass) {
 			if(logLevel = "ERROR") {
@@ -83,18 +67,6 @@ event Assert {
 		}
 	}
 
-	/** 
-     * Asserts that two values are equal. Uses different handling depending on type:
-     *
-     * Integer, string, boolean - uses the '=' operator.
-     * 
-     * float - checks equality within a tolerance of 0.0001.
-     *
-     * others - uses the any .getFields() method as a comparator.
-	 * @param testName name of test being asserted.
-	 * @param testVal value to test.
-     * @param refVal value to compare testVal to.
-	 */
 	action assertEquals(string testName, any testVal, any refVal) {
 		if(isEnabled) {
 			string message := "expected " + refVal.valueToString() + " but got " + testVal.valueToString();
@@ -127,10 +99,6 @@ event DeviceCreated {
 	integer reqId;
 }
 
-
-/**
- * A set of utility actions for testing EPL applications
- */
 event IoTTestHelper {	
 	constant string VALUE_FRAGMENT_TYPE := "myFragment";
 	constant string VALUE_SERIES_TYPE := "mySeries";
@@ -145,11 +113,6 @@ event IoTTestHelper {
 		return temp;
 	}
 
-	/**
-	Creates a device simulator. 
-	@param name The name of our device simulator.
-	@returns The reqId of the ManagedObject event sent to create a device.
-	*/
 	action createDevice(string name) returns integer 
 	{
 		ManagedObject mo := new ManagedObject;
@@ -183,12 +146,6 @@ event IoTTestHelper {
 		return reqId;
 	}
 
-	/**
-	Sends a measurement with a given value to Cumulocity IoT.  
-	@param source The id of the ManagedObject that is the source of the measurement. 
-	@param value The value of the measurement to be sent.
-	@returns The reqId of the measurement event.
-	*/
 	action sendMeasurement(string source, float value) returns integer
 	{
 		Measurement m := new Measurement;
